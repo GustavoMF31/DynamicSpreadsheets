@@ -1,0 +1,37 @@
+> Criar planilha estoque (nome:string, quant:num)
+Planilha criada com sucesso
+> Inserir Tomate 3 em estoque
+Ok
+> Inserir Banana 2 em estoque
+Ok
+> Imprimir estoque
+nome     quant
+Tomate   3
+Banana   2
+> Incrementar quant em estoque se (nome = Tomate)
+Ok
+> Decrementar quant em estoque se (nome = Banana)
+Ok
+> Imprimir estoque
+nome     quant
+Tomate   4
+Banana   1
+> Ordene estoque por nome
+Ok
+> Imprimir estoque
+nome     quant
+Banana   1
+Tomate   4
+> Inserir Pera 3 em estoque
+Ok
+> Imprimir estoque com (quant > 2)
+nome     quant
+Tomate   4
+Pera     3
+> Imprimir estoque com (nome = Banana)
+nome     quant
+Banana   1
+> Csv de estoque em meuarquivo.csv
+Tabela exportada para csv com sucesso
+> Sair
+Tchau!
