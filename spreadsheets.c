@@ -13,8 +13,8 @@ typedef enum {
 } Type;
 
 typedef struct {
-  int columns; // Amount of rows
-  int rows;    // Amount of columns
+  int columns; // Amount of columns
+  int rows;    // Amount of rows
   Type *column_types;  // One type per column
   char **column_names; // Holds the name of each column.
                        // Each name is expected to be in an 81 byte long buffer
@@ -150,7 +150,7 @@ void readFromFile(Spreadsheet *s, char *file_name){
   fread(types, sizeof(Type), s->columns, file);
   s->column_types = types;
 
-  // Read each column name (wich should always occupy the full 81 bytes)
+  // Read each column name (which should always occupy the full 81 bytes)
   char **names = malloc(s->columns * sizeof(char*));
   for (int i = 0; i < s->columns; i++){
     char *name = malloc(81 * sizeof(char));
