@@ -50,7 +50,6 @@ double literalAsDouble(Literal a){
       badType(a.literalType, "literalAsDouble");
   }
 
-  printf("Converted literal to double %lf\n", x);
   return x;
 }
 
@@ -67,7 +66,6 @@ bool compare(Literal a, Literal b, Comparison op){
 
   // For ease of implementation, other datatypes may be converted to
   // doubles for comparison (TODO: consider the consequences of this)
-  printf("Comparing types %d and %d", a.literalType, b.literalType);
   double c = literalAsDouble(a);
   double d = literalAsDouble(b);
 

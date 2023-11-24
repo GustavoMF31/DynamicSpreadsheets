@@ -29,10 +29,10 @@ int main(){
   Filter condition;
   condition.leftTerm.isLiteral = false;
   strncpy(condition.leftTerm.expr.columnName, "int", 81);
-  condition.op = EQ;
+  condition.op = GT;
   condition.rightTerm.isLiteral = true;
-  condition.rightTerm.expr.constant.literalType = STRING;
-  strncpy(condition.rightTerm.expr.constant.literal.stringValue, "helo", 81);
+  condition.rightTerm.expr.constant.literalType = INT;
+  condition.rightTerm.expr.constant.literal.intValue = 15;
 
   // Then filter with it, and display the result
   filterSpreadsheet(&s2, condition);
