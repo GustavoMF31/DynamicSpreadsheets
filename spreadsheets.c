@@ -12,13 +12,19 @@ typedef enum {
   DOUBLE
 } Type;
 
+typedef struct row {
+  char *entries; // Points to the raw data (bytes) of the entries in this row
+  struct row *next; // Points to the next Row in the spreadsheet this row is in.
+                    // It might be NULL, in which case this is the last row.
+} Row;
+
 typedef struct {
   int columns; // Amount of columns
   int rows;    // Amount of rows
   Type *column_types;  // One type per column
   char **column_names; // Holds the name of each column.
                        // Each name is expected to be in an 81 byte long buffer
-  char *data; // Points to the raw data (bytes) of the spreadsheet
+  Row *firstRow; // The first row. Might be NULL if there are no rows (rows == 0).
 } Spreadsheet;
 
 // Returns the size, in bytes, of the space necessary to store
@@ -52,19 +58,34 @@ int columnOffset(Spreadsheet s, int col){
   return offset;
 }
 
+// Returns a pointer to the start of the n'th row in the spreadsheet.
+// Assumes 0 <= rowIndex < s.rows. (returns NULL otherwise)
+// Note that this is an O(n) operation, which traverses the list of
+// rows up to the specified row.
+Row *getRow(Spreadsheet s, int rowIndex){
+  Row *row = s.firstRow;
+  while (rowIndex-- && row != NULL) row = row->next;
+  return row;
+}
+
+char* rowEntries(Spreadsheet s, int rowIndex){
+  return getRow(s, rowIndex)->entries;
+}
+
 // Returns the size (in bytes) occupied by a given row of the spreadsheet
 int rowSize(Spreadsheet s){
   return columnOffset(s, s.columns);
 }
 
-// Returns the size (in bytes) of the data buffer of a given spreadsheet
+// Returns the size (in bytes) of the data for all rows of the spreadsheet
+// combined
 int dataSize(Spreadsheet s){
   return s.rows * rowSize(s);
 }
 
 // Given row and column indices, returns a pointer to the cell they specify
-char* getCell(Spreadsheet s, int row, int col){
-  return s.data + rowSize(s) * row + columnOffset(s, col);
+char *getCell(Spreadsheet s, int row, int col){
+  return rowEntries(s, row) + columnOffset(s, col);
 }
 
 // Prints a cell of the spreadsheet to a file according to its type
@@ -129,14 +150,19 @@ void writeToFile(Spreadsheet s, char *file_name){
   for (int i = 0; i < s.columns; i++)
     fwrite(s.column_names[i], sizeof(char), 81, file);
 
-  // Write the actual data
-  fwrite(s.data, sizeof(char), dataSize(s), file);
+  // Write the actual data, traversing the list of rows
+  Row *row = s.firstRow;
+  while (row != NULL){
+    fwrite(row->entries, sizeof(char), rowSize(s), file);
+    row = row->next;
+  }
 
   fclose(file);
 }
 
 // Reads a spreadsheet from a binary file onto the given pointer.
-// Memory is allocated to hold buffers (column_types, column_names and data)
+// Memory is allocated to hold buffers
+// (column_types, column_names and each row node, as well as its entries)
 // which the caller should remember to free with freeSpreadsheet
 void readFromFile(Spreadsheet *s, char *file_name){
   FILE *file = fopen(file_name, "rb");
@@ -159,11 +185,30 @@ void readFromFile(Spreadsheet *s, char *file_name){
   }
   s->column_names = names;
 
-  // Read the spreadsheet contents
-  s->data = malloc(dataSize(*s));
-  fread(s->data, sizeof(char), dataSize(*s), file);
+  // Precalculate the row size, to avoid recomputing it in a loop
+  int size = rowSize(*s);
+
+  // Read the spreadsheet's contents, row by row
+  Row **row = &s->firstRow;
+  for (int i = 0; i < s->rows; i++){
+    *row = malloc(sizeof(**row));
+    (*row)->entries = malloc(size * sizeof(char));
+    fread((*row)->entries, sizeof(char), size, file);
+    row = &(*row)->next;
+  }
+  *row = NULL; // Write a NULL to signal the end of the list of rows
 
   fclose(file);
+}
+
+void freeRows(Row *row){
+  // Free each of the rows, traversing the list
+  while (row != NULL){
+    Row current = *row;
+    free(row);
+    free(current.entries);
+    row = current.next;
+  }
 }
 
 // Frees the fields of a spreadsheet opened by readFromFile
@@ -171,7 +216,7 @@ void freeSpreadsheet(Spreadsheet s){
   for (int i = 0; i < s.columns; i++) free(s.column_names[i]);
   free(s.column_names);
   free(s.column_types);
-  free(s.data);
+  freeRows(s.firstRow);
 }
 
 // Exports a spreadsheet in csv (comma separated values) format to a file
@@ -194,6 +239,8 @@ void exportAsCsv(Spreadsheet s, char *file_name){
     }
     fprintf(file, "\n");
   }
+
+  fclose(file);
 }
 
 int main(){
@@ -207,7 +254,14 @@ int main(){
   Type types[] = { BOOL, INT, STRING, DOUBLE };
   s.column_types = types;
 
-  s.data = malloc(dataSize(s));
+  // Allocate the rows
+  Row **row = &s.firstRow;
+  for (int i = 0; i < s.rows; i++){
+    *row = malloc(sizeof(**row));
+    (*row)->entries = malloc(rowSize(s));
+    row = &(*row)->next;
+  }
+  *row = NULL;
 
   // Manually fill in the values arbitrarily
   *((bool *) getCell(s, 0, 0)) = true;
@@ -215,8 +269,8 @@ int main(){
   *((int  *) getCell(s, 0, 1)) = 10;
   *((int  *) getCell(s, 1, 1)) = 20;
 
-  memcpy(getCell(s, 0, 2), "hello", 6);
-  memcpy(getCell(s, 1, 2), "world", 6);
+  strncpy(getCell(s, 0, 2), "hello", 81);
+  strncpy(getCell(s, 1, 2), "world", 81);
 
   *((double *) getCell(s, 0, 3)) = 1.5;
   *((double *) getCell(s, 1, 3)) = 2.9;
@@ -237,6 +291,6 @@ int main(){
   exportAsCsv(s2, "test.csv");
 
   freeSpreadsheet(s2);
-  free(s.data);
+  freeRows(s.firstRow);
   return 0;
 }
