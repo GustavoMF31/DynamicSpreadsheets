@@ -3,29 +3,15 @@
 #include<stdlib.h>
 #include<string.h>
 
-// Data types supported by the spreadsheets
-// (TODO: Should we have a separate "CHAR" type?)
-typedef enum {
-  BOOL,
-  STRING, // A stored string may only have up to 80 characters
-  INT,
-  DOUBLE
-} Type;
+#include "spreadsheets.h"
 
-typedef struct row {
-  char *entries; // Points to the raw data (bytes) of the entries in this row
-  struct row *next; // Points to the next Row in the spreadsheet this row is in.
-                    // It might be NULL, in which case this is the last row.
-} Row;
-
-typedef struct {
-  int columns; // Amount of columns
-  int rows;    // Amount of rows
-  Type *column_types;  // One type per column
-  char **column_names; // Holds the name of each column.
-                       // Each name is expected to be in an 81 byte long buffer
-  Row *firstRow; // The first row. Might be NULL if there are no rows (rows == 0).
-} Spreadsheet;
+// Crashes the program due to encontering and unexpected type.
+// The "noreturn" attribute informs the compiler that this function never returns
+// and helps to get rid of wrong warnings about forgetting a return statement
+__attribute__ ((noreturn)) void badType(Type t, char* functionName){
+  printf("ERROR: Got unrecognized type %d when executing %s\n", t, functionName);
+  exit(1);
+}
 
 // Returns the size, in bytes, of the space necessary to store
 // one element of a given type
@@ -43,9 +29,16 @@ int sizeOfType(Type t){
     case DOUBLE:
       return sizeof(double);
     default:
-      printf("Unrecognized type %d\n", t);
-      exit(1);
+      badType(t, "sizeOfType");
   }
+}
+
+// Determines the index of a column given its name
+int columnIndex(Spreadsheet s, char* name){
+  for (int i = 0; i < s.columns; i++)
+    if (strcmp(s.column_names[i], name) == 0) return i;
+
+  return -1;
 }
 
 // Returns the index of the data for a given column within a row
@@ -201,12 +194,16 @@ void readFromFile(Spreadsheet *s, char *file_name){
   fclose(file);
 }
 
+void freeRow(Row *row){
+  free(row->entries);
+  free(row);
+}
+
 void freeRows(Row *row){
   // Free each of the rows, traversing the list
   while (row != NULL){
     Row current = *row;
-    free(row);
-    free(current.entries);
+    freeRow(row);
     row = current.next;
   }
 }
@@ -217,6 +214,14 @@ void freeSpreadsheet(Spreadsheet s){
   free(s.column_names);
   free(s.column_types);
   freeRows(s.firstRow);
+}
+
+// Deletes a row from a spreadsheet
+void deleteRow(Spreadsheet *s, Row **prev, Row *curr){
+  s->rows--;
+  Row *next = curr->next;
+  *prev = next;
+  freeRow(curr);
 }
 
 // Exports a spreadsheet in csv (comma separated values) format to a file
@@ -243,16 +248,26 @@ void exportAsCsv(Spreadsheet s, char *file_name){
   fclose(file);
 }
 
-int main(){
-  // Initialize a test spreadsheet, then display it
+// Creates an example spreadsheet, which might be useful for testing
+Spreadsheet example(){
   Spreadsheet s;
   s.columns = 4;
   s.rows = 2;
 
+  // Fill in the column names
   char* col_names[] = { "bool", "int", "str", "double" };
-  s.column_names = col_names;
+  s.column_names = malloc(s.columns * sizeof(char*));
+  for (int i = 0; i < s.columns; i++){
+    // TODO: Define a macro for the maximum string length, set to 81
+    char *name = malloc(81 * sizeof(char));
+    s.column_names[i] = name;
+    strncpy(name, col_names[i], 81);
+  }
+
+  // Fill in the types
   Type types[] = { BOOL, INT, STRING, DOUBLE };
-  s.column_types = types;
+  s.column_types = malloc(s.columns * sizeof(Type));
+  for (int i = 0; i < s.columns; i++) s.column_types[i] = types[i];
 
   // Allocate the rows
   Row **row = &s.firstRow;
@@ -275,22 +290,5 @@ int main(){
   *((double *) getCell(s, 0, 3)) = 1.5;
   *((double *) getCell(s, 1, 3)) = 2.9;
 
-  // Display it to make sure everything is ok
-  displaySpreadsheet(s);
-
-  // Let's write it to disk and read it back
-  writeToFile(s, "test_spreadsheet.data");
-  Spreadsheet s2;
-  readFromFile(&s2, "test_spreadsheet.data");
-
-  // Then check the result is the same
-  printf("\n");
-  displaySpreadsheet(s2);
-
-  // Export it as a csv file
-  exportAsCsv(s2, "test.csv");
-
-  freeSpreadsheet(s2);
-  freeRows(s.firstRow);
-  return 0;
+  return s;
 }
