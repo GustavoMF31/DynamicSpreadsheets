@@ -224,6 +224,199 @@ void deleteRow(Spreadsheet *s, Row **prev, Row *curr){
   freeRow(curr);
 }
 
+
+// Adds a new row after a specific row
+void addRow(Spreadsheet *s, int row1) {
+  Row *newRow = malloc(sizeof(*newRow));
+  newRow->entries = malloc(rowSize(*s));
+
+  Row **currentRow = &s->firstRow;
+  for (int i = 0; i < row1; i++) {
+    currentRow = &(*currentRow)->next;
+    }
+    newRow->next = (*currentRow)->next;
+    (*currentRow)->next = newRow;
+    s->rows++;
+    for (int i = 0; i < s->columns; i++) {
+      updateCellValue(*s, row1+1, i);
+  }
+}
+
+// Updates the value of a cell at a specific position
+void updateCellValue(Spreadsheet s, int row, int col) {
+  bool bool_entry;
+  int int_entry;
+  char temp[5], string_entry[81];
+  double double_entry;
+  printf("Digite o novo valor da celula da linha: %d e coluna: %d: ", row, col);
+  switch (s.column_types[col]) {
+    case BOOL:
+      scanf("%s", temp);
+      if (!strcmp(temp, "true")){
+        bool_entry = true;
+      } else {
+        bool_entry = false;
+      }
+      *((bool *) getCell(s, row, col)) = bool_entry;
+      break;
+    case INT:
+      scanf("%d", &int_entry);
+      *((int *) getCell(s, row, col)) = int_entry;
+      break;
+    case STRING:
+      scanf("%s", string_entry);
+      strncpy(getCell(s, row, col), string_entry, 81);
+      break;
+    case DOUBLE:
+      scanf("%lf", &double_entry);
+      *((double *) getCell(s, row, col)) = double_entry;
+      break;
+    default:
+      break;
+  }
+  getchar();
+}
+
+// Adds a column after the last column
+void addColumn(Spreadsheet *s, char* colName, Type type) {
+  s->column_names = realloc(s->column_names, (s->columns+1)*(sizeof(char*)));
+  s->column_types = realloc(s->column_types ,(s->columns+1)*(sizeof(Type)));
+  s->column_names[s->columns] = malloc(81);
+  strncpy(s->column_names[s->columns], colName, 81);
+  s->column_types[s->columns] = type;
+  Row *currentRow = s->firstRow;
+  while (currentRow != NULL) {
+    currentRow->entries = realloc(currentRow->entries, rowSize(*s));
+    currentRow = currentRow->next;
+  }
+
+  for (int row = 0; row < s->rows; row++) {
+    updateCellValue(*s, row, s->columns);
+  }
+
+  s->columns++;
+}; 
+
+// Removes a column from a spreedsheet
+void removeColumn(Spreadsheet *s, int col) {
+
+  // MOVE TYPES AND NAMES TO THE LEFT AFTER COL
+
+  Type *auxTypeOld, *auxTypeNew;
+  char **auxNamesOld, **auxNamesNew;
+
+  auxNamesOld = (char**) malloc((s->columns)*sizeof(char*));
+  auxNamesNew = (char**) malloc((s->columns-1)*sizeof(char*));
+  auxTypeOld = (Type*) malloc((s->columns)*sizeof(Type));
+  auxTypeNew = (Type*) malloc((s->columns-1)*sizeof(Type));
+
+  for (int i = 0; i < s->columns-1; i++) {
+    *(auxNamesNew+i) = (char *) malloc(81);
+  } //alloc memory for pointers
+
+  for (int i = 0; i < s->columns; i++) {
+    *(auxNamesOld+i) = (char *) malloc(81);
+  } //alloc memory for pointers
+
+  auxNamesOld = s->column_names; //for free the old memory region
+  auxTypeOld = s->column_types; //for free the old memory region
+
+  for (int i = 0; i < col; i++) { //copy values between 0 and col to the new memory region
+    *(auxTypeNew+i) = s->column_types[i];
+    strncpy(*(auxNamesNew+i), s->column_names[i], 81);
+  }
+
+  for (int i = col; i < s->columns-1; i++) { //copy values between col+1 and s->columns to the new memory region
+    *(auxTypeNew+i) = s->column_types[i+1];
+    strncpy(*(auxNamesNew+i), s->column_names[i+1], 81); 
+  }
+
+  // MOVE CELLS TO THE LEFT AFTER COL
+  int oldOffSet = 0;
+  for (int i = 0; i < s->columns; i++) {
+    oldOffSet += sizeOfType(auxTypeOld[i]);
+  }
+
+  int newOffSet = 0;
+  for (int i = 0; i < s->columns-1; i++) {
+    newOffSet += sizeOfType(auxTypeNew[i]);
+  }
+
+  void **newMemoryRegion = (void**)malloc((s->rows)*sizeof(void*));
+  for (int i = 0; i < (s->rows); i++) {
+    *(newMemoryRegion+i) = malloc(newOffSet);
+  }
+  Row *aux = s->firstRow;
+  
+  int row = 0;
+  int moveBytes = 0;
+
+  while (row < s->rows) { //copy data to the new memory region
+  char *deleteEntries;
+  for (int c = 0; c < col; c++) {
+      switch(auxTypeNew[c]) {
+        case BOOL:
+          *((bool*) *(newMemoryRegion+row)+moveBytes) = *((bool *) getCell(*s, row, c));
+          break;
+        case STRING:
+          strncpy(*(newMemoryRegion+row)+moveBytes, getCell(*s, row, c), 81);
+          break;
+        case INT:
+          // *((int*) *(newMemoryRegion+row)+moveBytes) = *((int *) getCell(*s, row, c));
+          memmove(*(newMemoryRegion+row)+moveBytes, (int *)getCell(*s, row, c), 4);
+          break;
+        case DOUBLE:
+          //*((double*) *(newMemoryRegion+row)+moveBytes) = *((double *)getCell(*s, row, c));
+          memmove(*(newMemoryRegion+row)+moveBytes, (double *)getCell(*s, row, c), 8);
+          break;
+      }
+
+      moveBytes += sizeOfType(auxTypeNew[c]);
+    }
+
+    for (int c = col; c < s->columns-1; c++) {
+      switch(auxTypeNew[c]) {
+        case BOOL:
+          *((bool*) *(newMemoryRegion+row)+moveBytes) = *((bool *) getCell(*s, row, c+1));
+          break;
+        case STRING:
+          strncpy(*(newMemoryRegion+row)+moveBytes, getCell(*s, row, c+1), 81);
+          break;
+        case INT:
+          //*((int*) *(newMemoryRegion+row)+moveBytes) =  *((int *) getCell(*s, row, c+1));
+          memmove(*(newMemoryRegion+row)+moveBytes, (int *)getCell(*s, row, c+1), 4);
+          break;
+        case DOUBLE:
+          //*((double*) *(newMemoryRegion+row)+moveBytes) =  *((double *) getCell(*s, row, c+1));
+          memmove(*(newMemoryRegion+row)+moveBytes, (double *)getCell(*s, row, c+1), 8);
+          break;
+      }
+
+      moveBytes += sizeOfType(auxTypeNew[c]);
+    } 
+    
+    deleteEntries = aux->entries;
+    aux->entries = (char*)*(newMemoryRegion + row);
+    free(deleteEntries);
+
+    aux = aux->next;
+    row++;
+    moveBytes = 0;
+  }
+
+  s->column_names = realloc(s->column_names, (s->columns-1)*(sizeof(char*)));
+  s->column_types = realloc(s->column_types ,(s->columns-1)*(sizeof(Type)));
+
+  free(auxNamesOld);
+  free(auxTypeOld);
+
+  s->column_names = auxNamesNew;
+  s->column_types = auxTypeNew;
+
+  s->columns--;
+}
+
+
 // Exports a spreadsheet in csv (comma separated values) format to a file
 void exportAsCsv(Spreadsheet s, char *file_name){
   FILE *file = fopen(file_name, "w");
