@@ -32,6 +32,7 @@ void deleteRow(Spreadsheet *s, Row **prev, Row *curr);
 void writeToFile(Spreadsheet s, char *file_name);
 void readFromFile(Spreadsheet *s, char *file_name);
 Spreadsheet example();
-void displaySpreadsheet(Spreadsheet s);
 void exportAsCsv(Spreadsheet s, char *file_name);
 void freeSpreadsheet(Spreadsheet s);
+void updateCellValue(Spreadsheet s, int row, int col);
+void displaySpreadsheet(Spreadsheet s);

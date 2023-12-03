@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include<string.h>
 
+#include "interface.h"
 #include "spreadsheets.h"
 #include "filter.h"
 
@@ -20,7 +21,12 @@ int main(){
 
   // Then check the result is the same
   printf("\n");
+
+  // Test to see if it's printing correctly
   displaySpreadsheet(s2);
+
+  getchar();
+  clearTerminal();
 
   // Export it as a csv file
   exportAsCsv(s2, "test.csv");

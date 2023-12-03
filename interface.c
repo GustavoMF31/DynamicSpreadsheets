@@ -4,31 +4,15 @@
 #include <wchar.h>
 
 // Clears the console terminal
-void clearTerminal(){
-/*
-  #ifdef _WIN32 // Includes both 32 bit and 64 bit
-    #ifdef _WIN64
-      printf("Windows 64 bit\n");
-    #else 
-      printf("Windows 32 bit\n");
-    #endif
-  #else
-    printf("Not a Windows OS\n");
-  #endif
-
-
+void clearTerminal() {
   #ifdef _WIN32
-    system("cls");
-
+      system("cls");
   #else
-    system("clear");
-
-  else
-    system("clr"); 
-    */
+      system("clear");
+  #endif
 }
 
-// Fills the terminal with n occurrences of the specified caracter
+// Fills the terminal with n occurrences of the specified character
 void fill(char c, int n){
   for (int i = 0; i < n; i++) printf("%c", c);
 }
@@ -37,7 +21,7 @@ void fill(char c, int n){
 void title(const char title[], const wchar_t wtitle[]){
   unsigned int length = wcslen(wtitle);
 
-  printf("\n+");
+  printf("+");
   fill('-', length+6);
   printf("+\n");
 
@@ -78,7 +62,7 @@ int menu(const char options[][81], const wchar_t woptions[][81], int quant){
 
     getchar();
     if ((atoi(selection) > 0 || strcmp(selection, "0") == 0) && atoi(selection) <= quant){
-      //clearTerminal();
+      clearTerminal();
       return atoi(selection);
     }
     printf("\nEscolha inválida!\n");
@@ -136,7 +120,7 @@ int titleMenu(const char msg[], const wchar_t wmsg[], const char options[][81], 
 
     if ((atoi(selection) > 0 || strcmp(selection, "0") == 0) && atoi(selection) <= quant){
       getchar(); 
-      //clearTerminal();
+      clearTerminal();
       return atoi(selection);
     }
       printf("\nEscolha inválida!\n");
@@ -156,6 +140,7 @@ int main() {
     L"Configurações",
     L"Sair"
   };
-  menu(menu_inicial, menu_inicial_a, 3);
+  titleMenu("Dynamic Spreadsheets", L"Dynamic Spreadsheets", menu_inicial, menu_inicial_a, 3);
   return 0;
-}*/
+}
+*/

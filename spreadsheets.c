@@ -97,31 +97,13 @@ void printCell(Type t, char *cell, FILE *file){
       fprintf(file, "%g", * (double*) cell);
       break;
     default:
-      printf("Unrecognized type: %d\n", t);
-      exit(1);
+      badType(t, "printCell");
   }
 }
 
 // Prints to a file the cell of a spreadsheet at the chosen row and column
 void printCellByIndex(Spreadsheet s, int row, int col, FILE *file){
   printCell(s.column_types[col], getCell(s, row, col), file);
-}
-
-// Prints a spreadsheet to the terminal (mostly for debugging purposes)
-void displaySpreadsheet(Spreadsheet s){
-  for (int col = 0; col < s.columns; col++){
-    printf("%s", s.column_names[col]);
-    printf(" ");
-  }
-  printf("\n");
-
-  for (int row = 0; row < s.rows; row++){
-    for (int col = 0; col < s.columns; col++){
-      printCellByIndex(s, row, col, stdout);
-      printf(" ");
-    }
-    printf("\n");
-  }
 }
 
 // Ensures a file has been opened successfully (Exits the program otherwise)
@@ -199,8 +181,8 @@ void freeRow(Row *row){
   free(row);
 }
 
+// Free each of the rows, traversing the list
 void freeRows(Row *row){
-  // Free each of the rows, traversing the list
   while (row != NULL){
     Row current = *row;
     freeRow(row);
@@ -223,7 +205,6 @@ void deleteRow(Spreadsheet *s, Row **prev, Row *curr){
   *prev = next;
   freeRow(curr);
 }
-
 
 // Adds a new row after a specific row
 void addRow(Spreadsheet *s, int row1) {
@@ -352,8 +333,8 @@ void removeColumn(Spreadsheet *s, int col) {
   int moveBytes = 0;
 
   while (row < s->rows) { //copy data to the new memory region
-  char *deleteEntries;
-  for (int c = 0; c < col; c++) {
+    char *deleteEntries;
+    for (int c = 0; c < col; c++) {
       switch(auxTypeNew[c]) {
         case BOOL:
           *((bool*) *(newMemoryRegion+row)+moveBytes) = *((bool *) getCell(*s, row, c));
@@ -415,7 +396,6 @@ void removeColumn(Spreadsheet *s, int col) {
 
   s->columns--;
 }
-
 
 // Exports a spreadsheet in csv (comma separated values) format to a file
 void exportAsCsv(Spreadsheet s, char *file_name){
@@ -484,4 +464,28 @@ Spreadsheet example(){
   *((double *) getCell(s, 1, 3)) = 2.9;
 
   return s;
+}
+
+// displays the Spreadsheet
+void displaySpreadsheet(Spreadsheet s){
+  // prints the name of each section (each collumn)
+  for (int col = 0; col < s.columns; col++){
+    printf("%s  ", s.column_names[col]);
+  }
+  printf("\n");
+
+  Row *currentRow = s.firstRow; // pointer starts by pointing to the first row
+  while(currentRow!= NULL){     // while the row exists
+    for(int col=0; col<s.columns; col++){ // advances to the next column
+
+      Type cellType = s.column_types[col];  // celltype receaves the type of the column
+      char *cell = currentRow->entries + columnOffset(s, col); //cell points to the space in memory where the data is stored
+
+      // prints the information of the cell depending on its type
+      printCell(cellType, cell, stdout);
+      printf("  ");
+    }
+    printf("\n");                   // \n to the next row
+    currentRow = currentRow->next;  // pointer points to the next row
+  }
 }
