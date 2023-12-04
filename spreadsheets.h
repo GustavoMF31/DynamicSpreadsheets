@@ -36,3 +36,6 @@ void exportAsCsv(Spreadsheet s, char *file_name);
 void freeSpreadsheet(Spreadsheet s);
 void updateCellValue(Spreadsheet s, int row, int col);
 void displaySpreadsheet(Spreadsheet s);
+void removeColumn(Spreadsheet *s, int col);
+void addColumn(Spreadsheet *s, char* colName, Type type);
+void addRow(Spreadsheet *s, int row1);
