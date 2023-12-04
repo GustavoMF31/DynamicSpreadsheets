@@ -409,6 +409,102 @@ void removeColumn(Spreadsheet *s, int col) {
   s->columns--;
 }
 
+//Sort the rows of a Spreedsheet by the value of cells of a specific col in ascending order
+void ascendingSortByValue(Spreadsheet *s, int col) {
+  int qntRows = s->rows;
+  bool done = false;
+  Row *aux = s->firstRow;
+
+  while(!done) {
+    done = true;
+    for (int i = 0; i < qntRows-1; i++) {
+      if (*getCell(*s, i+1, col) < *getCell(*s, i, col) ) {
+        if (i != 0) {
+          Row *aux2 = getRow(*s, i+1)->next;
+          Row *aux3 = getRow(*s, i);
+          Row *aux4 = getRow(*s, i-1);
+          aux4->next = getRow(*s, i+1);
+          aux3->next = aux2;
+          getRow(*s, i)->next = aux3;
+          done = false;
+        } else {
+          Row *aux2 = aux;
+          s->firstRow = getRow(*s, i+1);
+          aux2->next = s->firstRow->next;
+          s->firstRow->next = aux2;
+          done = false;
+        }
+      }
+    }
+    qntRows--;
+  }
+  displaySpreadsheet(*s);
+}
+
+//Sort the rows of a Spreedsheet by the value of cells of a specific col in descending order
+void descendingSortByValue(Spreadsheet *s, int col) {
+  int qntRows = s->rows;
+  bool done = false;
+  Row *aux = s->firstRow;
+
+  while(!done) {
+    done = true;
+    for (int i = 0; i < qntRows-1; i++) {
+      if (*getCell(*s, i+1, col) > *getCell(*s, i, col) ) {
+        if (i != 0) {
+          Row *aux2 = getRow(*s, i+1)->next;
+          Row *aux3 = getRow(*s, i);
+          Row *aux4 = getRow(*s, i-1);
+          aux4->next = getRow(*s, i+1);
+          aux3->next = aux2;
+          getRow(*s, i)->next = aux3;
+          done = false;
+        } else {
+          Row *aux2 = aux;
+          s->firstRow = getRow(*s, i+1);
+          aux2->next = s->firstRow->next;
+          s->firstRow->next = aux2;
+          done = false;
+        }
+      }
+    }
+    qntRows--;
+  }
+  displaySpreadsheet(*s);
+}
+
+//Sort the rows of a Spreedsheet by the name of cells of a specific col
+void sortByAlphabet(Spreadsheet *s, int col) {
+  int qntRows = s->rows;
+  bool done = false;
+  Row *aux = s->firstRow;
+
+  while(!done) {
+    done = true;
+    for (int i = 0; i < qntRows-1; i++) {
+      if (strcmp(getCell(*s, i, col), getCell(*s, i+1, col)) > 0) {
+        if (i != 0) {
+          Row *aux2 = getRow(*s, i+1)->next;
+          Row *aux3 = getRow(*s, i);
+          Row *aux4 = getRow(*s, i-1);
+          aux4->next = getRow(*s, i+1);
+          aux3->next = aux2;
+          getRow(*s, i)->next = aux3;
+          done = false;
+        } else {
+          Row *aux2 = aux;
+          s->firstRow = getRow(*s, i+1);
+          aux2->next = s->firstRow->next;
+          s->firstRow->next = aux2;
+          done = false;
+        }
+      }
+    }
+    qntRows--;
+  }
+  displaySpreadsheet(*s);
+}
+
 // Exports a spreadsheet in csv (comma separated values) format to a file
 void exportAsCsv(Spreadsheet s, char *file_name){
   FILE *file = fopen(file_name, "w");
