@@ -40,3 +40,6 @@ void displaySpreadsheet(Spreadsheet s);
 void removeColumn(Spreadsheet *s, int col);
 void addColumn(Spreadsheet *s, char* colName, Type type);
 void addRow(Spreadsheet *s, int row1);
+void ascendingSortByValue(Spreadsheet *s, int col);
+void descendingSortByValue(Spreadsheet *s, int col);
+void sortByAlphabet(Spreadsheet *s, int col);
