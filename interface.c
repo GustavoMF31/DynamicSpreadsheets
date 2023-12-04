@@ -90,7 +90,7 @@ int titleMenu(const char msg[], const wchar_t wmsg[], const char options[][81], 
     aux = 1;
   }
 
-  printf("+");
+  printf("\n+");
   fill('-', maxlen + 5 + aux);
   printf("+\n");
 

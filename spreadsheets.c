@@ -106,17 +106,27 @@ void printCellByIndex(Spreadsheet s, int row, int col, FILE *file){
   printCell(s.column_types[col], getCell(s, row, col), file);
 }
 
-// Ensures a file has been opened successfully (Exits the program otherwise)
-void checkOpen(FILE *file, char *file_name){
-  if (file != NULL) return;
+// Ensures a file has been opened successfully (Exits the program if wanted)
+bool checkOpen(FILE *file, char *file_name, bool leave){
+  if (file != NULL) return true;
   printf("Não foi possível abrir arquivo %s", file_name);
-  exit(1);
+  if (leave) exit(1);
+  return false;
+}
+
+// Proceeds the initialization of a spreadsheet, for the sake of convenience
+void initializeSpreadsheet(Spreadsheet *s){
+  s->columns = 0;
+  s->rows = 0;
+  s->firstRow = NULL;
+  s->column_names = NULL;
+  s->column_types = NULL;
 }
 
 // Writes a spreadsheet to a file (in a binary format)
 void writeToFile(Spreadsheet s, char *file_name){
   FILE *file = fopen(file_name, "wb");
-  checkOpen(file, file_name);
+  checkOpen(file, file_name, true);
 
   // Write the header
   fwrite(&s.columns, sizeof(int) , 1, file);
@@ -139,9 +149,9 @@ void writeToFile(Spreadsheet s, char *file_name){
 // Memory is allocated to hold buffers
 // (column_types, column_names and each row node, as well as its entries)
 // which the caller should remember to free with freeSpreadsheet
-void readFromFile(Spreadsheet *s, char *file_name){
+bool readFromFile(Spreadsheet *s, char *file_name){
   FILE *file = fopen(file_name, "rb");
-  checkOpen(file, file_name);
+  if (!checkOpen(file, file_name, false)) return false;
 
   // Read the header
   fread(&s->columns, sizeof(int), 1, file);
@@ -174,6 +184,8 @@ void readFromFile(Spreadsheet *s, char *file_name){
   *row = NULL; // Write a NULL to signal the end of the list of rows
 
   fclose(file);
+
+  return true;
 }
 
 void freeRow(Row *row){
@@ -400,7 +412,7 @@ void removeColumn(Spreadsheet *s, int col) {
 // Exports a spreadsheet in csv (comma separated values) format to a file
 void exportAsCsv(Spreadsheet s, char *file_name){
   FILE *file = fopen(file_name, "w");
-  checkOpen(file, file_name);
+  checkOpen(file, file_name, true);
 
   // Write the header
   for (int i = 0; i < s.columns; i++){
