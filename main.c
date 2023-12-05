@@ -54,7 +54,7 @@ int main(){
         clearTerminal();
         printf("\nCrie uma nova planilha aqui, dando suas informações iniciais.\n");
         while (true){
-          printf("\nQual será o nome da nova planilha <não inclua acentos> ?\n\n>> ");
+          printf("\nQual será o nome da nova planilha <sem acentos> ?\n\n>> ");
           strcpy(name, "");
           scanf("%[^\n]", name);
           getchar();
@@ -122,7 +122,7 @@ int main(){
 
         while (true){
           clearTerminal();
-          printf("\nGerencie sua planilha de sua maneira!\n");
+          printf("\nGerencie '%s' à sua maneira!\n", name);
 
           int loadSelection = menu(loadMenu, wloadMenu, 5);
 
@@ -148,23 +148,276 @@ int main(){
                   L"Voltar"
                 };
 
+                char myColumnName[81];
+                int columnPosition, rowPosition;
+                Type myColumnType;
+
                 printf("\nAdicione, edite e remova elementos de sua planilha!\n");
 
                 int editionSelection = menu(editionMenu, weditionMenu, 7);
 
                 switch (editionSelection){ // TODO
                   case 1: // "Adicionar Campo"
+                    printf("\nAdicione um novo campo, correspondente a uma coluna, em sua planilha.\n");
+                    
+                    // Receiving the column name
+                    while (true){
+                      bool alreadyExists = false;
+                      printf("\nQual será o nome do novo campo <sem acentos> ?\n\n>> ");
+                      strcpy(myColumnName, "");
+                      scanf("%[^\n]", myColumnName);
+                      getchar();
+                      for (int i = 0; i < mainSpreadsheet.columns; i++){
+                        if (strcmp(myColumnName, mainSpreadsheet.column_names[i]) == 0){
+                          alreadyExists = true;
+                          break;
+                        }
+                      }
+                      if (alreadyExists){
+                        printf("\nJá existe campo com esse nome.\n");
+                        continue;
+                      }
+                      if (strcmp(myColumnName, "") != 0) break;
+                      printf("\nInsira um nome válido.\n");
+                    }
+
+                    const char typeMenu[][81] = {
+                      "Inteiro",
+                      "Racional",
+                      "Booleano",
+                      "String"
+                    };
+                    const wchar_t wtypeMenu[][81] = {
+                      L"Inteiro",
+                      L"Racional",
+                      L"Booleano",
+                      L"String"
+                    };
+
+                    int typeSelection = titleMenu("Qual será o tipo do campo?", L"Qual será o tipo do campo?", typeMenu, wtypeMenu, 4);
+
+                    // Selecting its type
+                    switch (typeSelection){
+                      case 1: // "Inteiro"
+                        myColumnType = INT;
+                        printf("\nO campo '%s', de tipo 'inteiro', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+                        break;
+                      case 2: // "Racional"
+                        myColumnType = DOUBLE;
+                        printf("\nO campo '%s', de tipo 'racional', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+                        break;
+                      case 3: // "Booleano"
+                        myColumnType = BOOL;
+                        printf("\nO campo '%s', de tipo 'booleano', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+                        break;
+                      case 4: // "String"
+                        myColumnType = STRING;
+                        printf("\nO campo '%s', de tipo 'string', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+                        break;
+                    }
+
+                    // If it is not empty in rows, instruct the user about the insertion of data in the existing rows on the new column
+                    if (mainSpreadsheet.rows > 0){
+                      printf("\nInsira os valores a serem adicionados à nova coluna.\n");
+                      printf("\nIdentifique booleanos por 'verdadeiro' ou 'falso', e use . para delimitar a parte fracionária de racionais.\n\n");
+                    }
+
+                    addColumn(&mainSpreadsheet, myColumnName, myColumnType);
+
+                    writeToFile(mainSpreadsheet, fileName);
+
+                    menu(backMenu, wbackMenu, 1);
+
+                    break;
                   case 2: // "Remover Campo"
+                    printf("\nRetire um campo da planilha.\n");
+
+                    // Treats the case where the spreadsheet does not have any columns to remove
+                    if (mainSpreadsheet.columns == 0){
+                      printf("\nA planilha atual não possui campos para remoção.\n");
+                      menu(backMenu, wbackMenu, 1);
+                      break;
+                    }
+
+                    while (true){
+                      bool exists = false;
+
+                      printf("\nQual o nome do campo a ser excluído?\n\n>> ");
+                      strcpy(myColumnName, "");
+                      scanf("%[^\n]", myColumnName);
+                      getchar();
+
+                      for (int i = 0; i < mainSpreadsheet.columns; i++){
+                        if (strcmp(myColumnName, mainSpreadsheet.column_names[i]) == 0){
+                          exists = true;
+                          columnPosition = i;
+                          break;
+                        }
+                      }
+
+                      if (!exists){
+                        printf("\nNão há campo com esse nome na planilha.\n");
+                        continue;
+                      }
+
+                      break;
+                    }
+
+                    removeColumn(&mainSpreadsheet, columnPosition);
+
+                    printf("\nO campo '%s' foi removido com sucesso!\n", myColumnName);
+
+                    writeToFile(mainSpreadsheet, fileName);
+
+                    menu(backMenu, wbackMenu, 1);
+                    break;
                   case 3: // "Adicionar Linha"
+                    printf("\nAdicione uma nova linha em qualquer posição disponível na planilha.\n");
+
+                    if (mainSpreadsheet.rows > 0){
+                      while (true){
+                        printf("\nQual o índice da linha que você quer incluir <de 0 a %d> ?\n\n>> ", mainSpreadsheet.rows);
+                        scanf("%d", &rowPosition);
+
+                        if (rowPosition >= 0 && rowPosition <= mainSpreadsheet.rows) break;
+
+                        printf("\nInsira uma posição válida.\n");
+                      }
+                    }
+                    else rowPosition = 0;
+
+                    printf("\nA linha foi criada com sucesso!\n");
+                    
+                    // If it is not empty in columns, instruct the user about the insertion of data in the existing columns on the new row
+                    if (mainSpreadsheet.columns > 0){
+                      printf("\nInsira os valores a serem adicionados à nova linha.\n");
+                      printf("\nIdentifique booleanos por 'verdadeiro' ou 'falso', e use . para delimitar a parte fracionária de racionais.\n\n");
+                    }
+
+                    addRow(&mainSpreadsheet, rowPosition);
+
+                    writeToFile(mainSpreadsheet, fileName);
+
+                    menu(backMenu, wbackMenu, 1);
+                    break;
                   case 4: // "Remover Linha"
+                    printf("\nExclua uma linha com praticidade!\n");
+
+                    if (mainSpreadsheet.rows > 0){
+                      while (true){
+                        printf("\nQual o índice da linha a ser eliminada <de 0 a %d> ?\n\n>> ", mainSpreadsheet.rows-1);
+                        scanf("%d", &rowPosition);
+                        
+                        if (rowPosition >= 0 && rowPosition <= mainSpreadsheet.rows-1) break;
+
+                        printf("\nInsira uma posição válida.\n");
+                      }
+                    }
+                    else rowPosition = 0;
+
+                    deleteRowByIndex(&mainSpreadsheet, rowPosition);
+
+                    printf("\nA linha foi apagada com sucesso!\n");
+
+                    writeToFile(mainSpreadsheet, fileName);
+
+                    menu(backMenu, wbackMenu, 1);
+                    break;
                   case 5: // "Editar Célula"
+                    printf("\nModifique o valor de uma célula em específico.\n");
+
+                    while (true){
+                      printf("\nQual a posição da célula <linha> <coluna> ?\n\n>> ");
+                      scanf("%d %d", &rowPosition, &columnPosition);
+
+                      if (rowPosition >= 0 && rowPosition <= mainSpreadsheet.rows-1 && columnPosition >= 0 && columnPosition <= mainSpreadsheet.columns-1) break;
+
+                      printf("\nDigite coordenadas existentes na planilha.\n");
+                    }
+
+                    printf("\nA célula foi encontrada!\n");
+
+                    updateCellValue(mainSpreadsheet, rowPosition, columnPosition);
+
+                    menu(backMenu, wbackMenu, 1);
+                    break;
                   case 6: // "Ordenar Planilha"
+                    printf("\nOrdene a planilha de acordo com os dados de uma coluna.\n");
+
+                    while (true){
+                      bool exists = false, isBool = false;
+
+                      printf("\nQual o nome do campo a ser considerado?\n\n>> ");
+                      strcpy(myColumnName, "");
+                      scanf("%[^\n]", myColumnName);
+                      getchar();
+
+                      for (int i = 0; i < mainSpreadsheet.columns; i++){
+                        if (strcmp(myColumnName, mainSpreadsheet.column_names[i]) == 0){
+                          exists = true;
+                          if (mainSpreadsheet.column_types[i] == BOOL){
+                            isBool = true;
+                            break;
+                          }
+                          columnPosition = i;
+                          break;
+                        }
+                      }
+
+                      if (!exists){
+                        printf("\nNão há campo com esse nome na planilha.\n");
+                        continue;
+                      }
+                      else if (isBool){
+                        printf("\nImpossível ordenar por valor booleano.\n");
+                        continue;
+                      }
+
+                      break;
+                    }
+
+                    // The implementation of sorting is a little bit different for strings, so we need to divide the cases
+                    if (mainSpreadsheet.column_types[columnPosition] != STRING){
+                      const char sortMenu[][81] = {
+                        "Ordem Crescente",
+                        "Ordem Decrescente"
+                      };
+                      const wchar_t wsortMenu[][81] = {
+                        L"Ordem Crescente",
+                        L"Ordem Decrescente"
+                      };
+
+                      if (titleMenu("Ordenar de qual forma?", L"Ordenar de qual forma?", sortMenu, wsortMenu, 2) == 1){
+                        ascendingSortByValue(&mainSpreadsheet, columnPosition);
+                        printf("\nA planilha foi ordenada, a partir do campo '%s', em ordem crescente de valor.\n", myColumnName);
+                      }
+                      else {
+                        descendingSortByValue(&mainSpreadsheet, columnPosition);
+                        printf("\nA planilha foi ordenada, a partir do campo '%s', em ordem decrescente de valor.\n", myColumnName);
+                      }
+                    }
+                    else {
+                      clearTerminal();
+                      sortByAlphabet(&mainSpreadsheet, columnPosition);
+                      printf("\nA planilha foi ordenada, a partir do campo '%s', em ordem alfabética.\n", myColumnName);
+                    }
+
+                    printf("\nPlanilha: %s\n\n", name);
+
+                    displaySpreadsheet(mainSpreadsheet);
+
+                    menu(backMenu, wbackMenu, 1);
+                    break;
                   case 7: // "Voltar"
                     break;
                 }
 
+                // Save the spreadsheet automatically after every modification
+                writeToFile(mainSpreadsheet, fileName);
+
                 if (editionSelection == 7) break;
               }
+
               break;
             case 2: // "Exibir Planilha"
               while (true){
@@ -258,7 +511,7 @@ int main(){
 
               writeToFile(mainSpreadsheet, fileName);
 
-              printf("\nO arquivo %s foi salvo com sucesso!\n", fileName);
+              printf("\nO arquivo '%s' foi salvo com sucesso!\n", fileName);
 
               menu(backMenu, wbackMenu, 1);
               break;
@@ -307,6 +560,12 @@ int main(){
 
         break;
       case 4: // "Sair"
+        // Save the spreadsheet one more time...
+        writeToFile(mainSpreadsheet, fileName);
+
+        // and, then, release the memory
+        freeSpreadsheet(mainSpreadsheet);
+
         break;
     }
 

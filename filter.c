@@ -173,9 +173,9 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
 
 // Removes every entry of a spreadsheet that doesn't satisfy a filter
 void filterSpreadsheet(Spreadsheet *s, Filter cond){
-
+  int i = 0;
   // Iterate over the list of rows
-  for (Row **row = &s->firstRow; *row != NULL; ){
+  for (Row **row = &s->firstRow; *row != NULL; i++){
     // If a row passes the filter, we skip it,
     // but, otherwise, it gets deleted.
     if (checkCondition(*s, (*row)->entries, cond)) row = &(*row)->next;

@@ -85,7 +85,7 @@ char *getCell(Spreadsheet s, int row, int col){
 void printCell(Type t, char *cell, FILE *file){
   switch (t) {
     case BOOL:
-      fprintf(file, * (bool*) cell ? "true" : "false");
+      fprintf(file, * (bool*) cell ? "verdadeiro" : "falso");
       break;
     case INT:
       fprintf(file, "%d", * (int*) cell);
@@ -218,34 +218,62 @@ void deleteRow(Spreadsheet *s, Row **prev, Row *curr){
   freeRow(curr);
 }
 
+// Deletes a row from a spreadsheet by its index
+void deleteRowByIndex(Spreadsheet *s, int pos){
+  Row *prev = s->firstRow;
+  Row *clear;
+
+  if (pos == 0){
+    s->firstRow = prev->next;
+    freeRow(prev);
+    s->rows--;
+    return;
+  }
+
+  for (int i = 0; i < pos-1; i++) prev = prev->next;
+
+  clear = prev->next;
+  prev->next = clear->next;
+  freeRow(clear);
+  s->rows--;
+}
+
 // Adds a new row after a specific row
 void addRow(Spreadsheet *s, int row1) {
   Row *newRow = malloc(sizeof(*newRow));
   newRow->entries = malloc(rowSize(*s));
 
-  Row **currentRow = &s->firstRow;
-  for (int i = 0; i < row1; i++) {
-    currentRow = &(*currentRow)->next;
+  if (row1 == 0){
+    s->firstRow = newRow;
+    newRow->next = NULL;
+  }
+  else {
+    Row **currentRow = &s->firstRow;
+    for (int i = 0; i < row1; i++) {
+      currentRow = &(*currentRow)->next;
     }
     newRow->next = (*currentRow)->next;
     (*currentRow)->next = newRow;
-    s->rows++;
-    for (int i = 0; i < s->columns; i++) {
-      updateCellValue(*s, row1+1, i);
+  }
+
+  s->rows++;
+  for (int i = 0; i < s->columns; i++) {
+    updateCellValue(*s, row1+1, i);
   }
 }
 
+// NEEDS FIXING!
 // Updates the value of a cell at a specific position
 void updateCellValue(Spreadsheet s, int row, int col) {
   bool bool_entry;
   int int_entry;
-  char temp[5], string_entry[81];
+  char temp[11], string_entry[81];
   double double_entry;
-  printf("Digite o novo valor da celula da linha: %d e coluna: %d: ", row, col);
+  printf("Digite o novo valor da célula da linha <%d> e campo <%s> : ", row, s.column_names[col]);
   switch (s.column_types[col]) {
     case BOOL:
       scanf("%s", temp);
-      if (!strcmp(temp, "true")){
+      if (!strcmp(temp, "verdadeiro")){
         bool_entry = true;
       } else {
         bool_entry = false;
@@ -265,6 +293,7 @@ void updateCellValue(Spreadsheet s, int row, int col) {
       *((double *) getCell(s, row, col)) = double_entry;
       break;
     default:
+      badType(s.column_types[col], "updateCellValue");
       break;
   }
   getchar();
@@ -283,11 +312,12 @@ void addColumn(Spreadsheet *s, char* colName, Type type) {
     currentRow = currentRow->next;
   }
 
+  s->columns++;
+  if (s->rows == 0) return;
+
   for (int row = 0; row < s->rows; row++) {
     updateCellValue(*s, row, s->columns);
   }
-
-  s->columns++;
 }; 
 
 // Removes a column from a spreedsheet
@@ -438,7 +468,6 @@ void ascendingSortByValue(Spreadsheet *s, int col) {
     }
     qntRows--;
   }
-  displaySpreadsheet(*s);
 }
 
 //Sort the rows of a Spreedsheet by the value of cells of a specific col in descending order
@@ -470,7 +499,6 @@ void descendingSortByValue(Spreadsheet *s, int col) {
     }
     qntRows--;
   }
-  displaySpreadsheet(*s);
 }
 
 //Sort the rows of a Spreedsheet by the name of cells of a specific col
@@ -502,7 +530,6 @@ void sortByAlphabet(Spreadsheet *s, int col) {
     }
     qntRows--;
   }
-  displaySpreadsheet(*s);
 }
 
 // Exports a spreadsheet in csv (comma separated values) format to a file
