@@ -301,24 +301,24 @@ void updateCellValue(Spreadsheet s, int row, int col) {
 
 // Adds a column after the last column
 void addColumn(Spreadsheet *s, char* colName, Type type) {
-  s->column_names = realloc(s->column_names, (s->columns+1)*(sizeof(char*)));
-  s->column_types = realloc(s->column_types ,(s->columns+1)*(sizeof(Type)));
-  s->column_names[s->columns] = malloc(81);
-  strncpy(s->column_names[s->columns], colName, 81);
-  s->column_types[s->columns] = type;
+  s->columns++;
+  s->column_names = realloc(s->column_names, (s->columns)*(sizeof(char*)));
+  s->column_types = realloc(s->column_types ,(s->columns)*(sizeof(Type)));
+  s->column_names[s->columns-1] = malloc(81);
+  strncpy(s->column_names[s->columns-1], colName, 81);
+  s->column_types[s->columns-1] = type;
   Row *currentRow = s->firstRow;
   while (currentRow != NULL) {
     currentRow->entries = realloc(currentRow->entries, rowSize(*s));
     currentRow = currentRow->next;
   }
 
-  s->columns++;
   if (s->rows == 0) return;
 
   for (int row = 0; row < s->rows; row++) {
-    updateCellValue(*s, row, s->columns);
+    updateCellValue(*s, row, s->columns-1);
   }
-}; 
+};
 
 // Removes a column from a spreedsheet
 void removeColumn(Spreadsheet *s, int col) {
