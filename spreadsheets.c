@@ -4,6 +4,7 @@
 #include<string.h>
 
 #include "spreadsheets.h"
+#include "interface.h"
 
 // Crashes the program due to encontering and unexpected type.
 // The "noreturn" attribute informs the compiler that this function never returns
@@ -601,26 +602,118 @@ Spreadsheet example(){
   return s;
 }
 
-// displays the Spreadsheet
+// Displays the Spreadsheet in a beautiful way
 void displaySpreadsheet(Spreadsheet s){
-  // prints the name of each section (each collumn)
-  for (int col = 0; col < s.columns; col++){
-    printf("%s  ", s.column_names[col]);
+  int* columnWidths = (int*)malloc(s.columns * sizeof(int));
+  char buffer[81];
+  int currentSize;
+    
+  // Calculate the maximum width for each column
+  for (int col = 0; col < s.columns; col++) {
+    columnWidths[col] = strlen(s.column_names[col]);   
+    if (s.column_types[col] == BOOL && columnWidths[col] > 10) continue;
+
+    Row* currentRow = s.firstRow;
+
+    while (currentRow != NULL) {
+      char* cell = currentRow->entries + columnOffset(s, col);
+      switch (s.column_types[col]){
+        case STRING:
+          currentSize = strlen(cell)+2;
+          if (columnWidths[col] < currentSize){
+                columnWidths[col] = currentSize;
+          }
+          break;
+        case BOOL:
+          if (*(bool*) cell){
+              columnWidths[col] = 10;
+          }
+          else if (columnWidths[col] < 5){
+              columnWidths[col] = 5;
+          }
+          break;
+        case INT:
+          snprintf(buffer, 81, "%d", *(int*) cell);
+          currentSize = strlen(buffer);
+          if (columnWidths[col] < currentSize){
+              columnWidths[col] = currentSize;
+          }
+          break;
+        case DOUBLE:
+          snprintf(buffer, 81, "%g", *(double*) cell);
+          currentSize = strlen(buffer);
+          if (columnWidths[col] < currentSize){
+              columnWidths[col] = currentSize;
+          }
+          break;
+        default:
+          badType(s.column_types[col], "displaySpreadsheet");
+      }
+            
+      if (s.column_types[col] == BOOL && (*(bool*) cell)) break;
+      currentRow = currentRow->next;
+    }
   }
-  printf("\n");
 
-  Row *currentRow = s.firstRow; // pointer starts by pointing to the first row
-  while(currentRow!= NULL){     // while the row exists
-    for(int col=0; col<s.columns; col++){ // advances to the next column
+  // Width of the spreadsheet
+  int auxinicio=0;
+  for(int i=0; i<s.columns; i++){
+    auxinicio+=columnWidths[i];
+  }
 
-      Type cellType = s.column_types[col];  // celltype receaves the type of the column
-      char *cell = currentRow->entries + columnOffset(s, col); //cell points to the space in memory where the data is stored
+  // Printf the header
+  printf("+");
+  fill('-', auxinicio+s.columns-1);
+  printf("+\n|");
 
+  // Prints the name of each section (each collumn)
+  for (int col = 0; col < s.columns; col++){
+    int size=strlen(s.column_names[col]);
+    printf("%s", s.column_names[col]);
+    fill(' ', columnWidths[col]-size);
+    printf("|");
+  }
+  printf("\n+");
+  fill('-', auxinicio+s.columns-1);
+  printf("+\n");
+
+
+  Row *current = s.firstRow; // pointer starts by pointing to the first row
+  while (current != NULL){     // while the row exists
+    for (int col=0; col<s.columns; col++){ // advances to the next column
+      printf("|");
+      char *cell = current->entries + columnOffset(s, col); //cell points to the space in memory where the data is stored
+      Type cellType = s.column_types[col];  // celltype recieves the type of the column
       // prints the information of the cell depending on its type
       printCell(cellType, cell, stdout);
-      printf("  ");
+      int cellSize;
+      
+      switch (cellType){
+        case STRING:
+          cellSize = strlen(cell)+2;
+          break;
+        case BOOL:
+          cellSize = (*(bool*) cell) ? 10 : 5;
+          break;
+        case INT:
+          snprintf(buffer, 81, "%d", *(int*) cell);
+          cellSize = strlen(buffer);
+          break;
+        case DOUBLE:
+          snprintf(buffer, 81, "%g", *(double*) cell);
+          cellSize = strlen(buffer);
+          break;
+        default:
+          badType(cellType, "displaySpreadsheet");
+      }
+      
+      fill(' ', columnWidths[col]-cellSize);
     }
-    printf("\n");                   // \n to the next row
-    currentRow = currentRow->next;  // pointer points to the next row
+    printf("|\n");                   // \n to the next row
+    current = current->next;  // pointer points to the next row
   }
+  // prints the bottom header
+  printf("+");
+  fill('-', auxinicio + s.columns-1);
+  printf("+\n");
 }
