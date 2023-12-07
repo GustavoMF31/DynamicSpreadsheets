@@ -741,9 +741,7 @@ void displaySpreadsheet(Spreadsheet s){
   printf("+\n");
 
   // frees the dynamic array
-  for (int col = 0; col < s.columns; col++) {
-      free(columnWidths[col]);
-  }
+  free(columnWidths);
 
 }
 
