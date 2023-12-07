@@ -50,24 +50,6 @@ void clearColor(){
   clearTerminal();
 }
 
-// Delays the stream, accepting fractions of seconds
-void wait(float sec){
-  struct timespec delay;
-  delay.tv_sec = (time_t)sec;
-  delay.tv_nsec = (long int)(sec - delay.tv_sec) * 1000000000;
-  nanosleep(&delay, NULL);
-}
-
-// Simulates a loading section after a given message
-void loading(char msg[], float duration){
-  printf("%s", msg);
-  for (int i = 0; i < 3; i++){
-    fflush(stdout);
-    wait(duration/3);
-    printf(".");
-  }
-}
-
 // Fills the terminal with n occurrences of the specified character
 void fill(char c, int n){
   for (int i = 0; i < n; i++) printf("%c", c);

@@ -200,6 +200,8 @@ int main(){
     if (mainSelection == 5) break;
   }
 
+  clearColor();
+
   return 0;
 }
 
@@ -576,7 +578,7 @@ void sortSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *myColumnNam
 
 // "Planilha Completa"
 void completeDisplay(Spreadsheet *mainSpreadsheet, char *name){
-  printf("\n%sPlanilha: %s%s\n\n", palette[PURPLE], palette[YELLOW], name);
+  printf("\n%sPlanilha: %s%s\n\n", palette[CYAN], palette[YELLOW], name);
 
   displaySpreadsheet(*mainSpreadsheet);
 
@@ -620,7 +622,7 @@ void filteredDisplay(Spreadsheet *mainSpreadsheet, char *name, char* fileName){
     filterSpreadsheet(&auxSpreadsheet, condition);
   }
 
-  printf("\n%sPlanilha: %s%s\n\n", palette[PURPLE], palette[YELLOW], name);
+  printf("\n%sPlanilha: %s%s\n\n", palette[CYAN], palette[YELLOW], name);
 
   displaySpreadsheet(auxSpreadsheet);
 

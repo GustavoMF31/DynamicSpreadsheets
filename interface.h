@@ -19,8 +19,6 @@ extern char palette[8][81];
 void clearTerminal();
 void setColor();
 void clearColor();
-void wait(float sec);
-void loading(char msg[], float duration);
 void fill(char c, int n);
 void title(const char title[], const wchar_t wtitle[]);
 int menu(const char options[][81], const wchar_t woptions[][81], int quant);
