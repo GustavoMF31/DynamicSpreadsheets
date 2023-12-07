@@ -1,6 +1,24 @@
 #pragma once
 
+// Enumerating the formatting values available
+enum format {
+  RED,     // Some colors to stylize the console
+  GREEN,
+  YELLOW,
+  BLUE,
+  PURPLE,
+  CYAN,
+  BOLD,    // Used to highlight some pieces of text
+  CLEAR    // Turn back to the normal state
+};
+
+// Global Variables
+extern const char formatCodes[8][81];
+extern char palette[8][81];
+
 void clearTerminal();
+void setColor();
+void clearColor();
 void wait(float sec);
 void loading(char msg[], float duration);
 void fill(char c, int n);

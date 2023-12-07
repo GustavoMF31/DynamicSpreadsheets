@@ -6,6 +6,24 @@
 
 #include "interface.h"
 
+// Base array of format codes
+const char formatCodes[8][81] = {
+  "\033[31m", // RED
+  "\033[32m", // GREEN
+  "\033[33m", // YELLOW
+  "\033[34m", // BLUE
+  "\033[35m", // PURPLE
+  "\033[36m", // CYAN
+  "\033[1m",  // BOLD
+  "\033[m"    // CLEAR
+};
+
+// Array that will determine the collection of colors used in the program
+// It starts as 8 null strings, indicating that the program will be at standard theme
+// If the user opts for a colored console, every string in this array will receive the format codes above
+// Deactivating the colored console option will clear the color scheme and turn this back to null
+char palette[8][81] = {};
+
 // Clears the console terminal
 void clearTerminal() {
   #ifdef _WIN32
@@ -13,6 +31,23 @@ void clearTerminal() {
   #else
       system("clear");
   #endif
+}
+
+// Sets the color scheme into the active state
+void setColor(){
+  for (int i = 0; i < 8; i++){
+    strcpy(palette[i], formatCodes[i]);
+  }
+  clearTerminal();
+}
+
+// Clears the color scheme of the program
+void clearColor(){
+  for (int i = 0; i < 8; i++){
+    strcpy(palette[i], "");
+  }
+  printf("%s", formatCodes[CLEAR]);
+  clearTerminal();
 }
 
 // Delays the stream, accepting fractions of seconds
@@ -42,7 +77,7 @@ void fill(char c, int n){
 void title(const char title[], const wchar_t wtitle[]){
   unsigned int length = wcslen(wtitle);
 
-  printf("+");
+  printf("%s%s+", palette[BOLD], palette[CYAN]);
   fill('-', length+6);
   printf("+\n");
 
@@ -50,7 +85,7 @@ void title(const char title[], const wchar_t wtitle[]){
 
   printf("\n+");
   fill('-', length+6);
-  printf("+\n");
+  printf("+%s%s\n", palette[CLEAR], palette[CYAN]);
 }
 
 // Displays a simple menu that offers options to the user to choose from
@@ -63,11 +98,11 @@ int menu(const char options[][81], const wchar_t woptions[][81], int quant){
     if (wcslen(woptions[i]) > maxlen) maxlen = wcslen(woptions[i]);
   }
 
-  printf("\n+");
+  printf("\n%s+", palette[CYAN]);
   fill('-', maxlen + 5);
   printf("+");
   for (int i = 0; i < quant; i++){
-    printf("\n|[%d] %s", i+1, options[i]);
+    printf("\n|%s[%d]%s %s", palette[YELLOW], i+1, palette[CYAN], options[i]);
     fill(' ', maxlen + 1 - wcslen(woptions[i]));
     printf("|");
   }
@@ -78,15 +113,15 @@ int menu(const char options[][81], const wchar_t woptions[][81], int quant){
 
   // Receives defended input from the user
   while (1){
-    printf("\n>> ");
-    scanf("%[^\n]", selection);
+    printf("\n%s>> %s", palette[CYAN], palette[GREEN]);
+    scanf("%81[^\n]", selection);
     getchar();
     
     if ((atoi(selection) > 0 || strcmp(selection, "0") == 0) && atoi(selection) <= quant){
       clearTerminal();
       return atoi(selection);
     }
-    printf("\nEscolha inválida!\n");
+    printf("\n%sEscolha inválida!\n", palette[RED]);
   }
 }
 
@@ -111,7 +146,7 @@ int titleMenu(const char msg[], const wchar_t wmsg[], const char options[][81], 
     aux = 1;
   }
 
-  printf("\n+");
+  printf("\n%s+", palette[CYAN]);
   fill('-', maxlen + 5 + aux);
   printf("+\n");
 
@@ -125,7 +160,7 @@ int titleMenu(const char msg[], const wchar_t wmsg[], const char options[][81], 
   fill('-', maxlen + 5 + aux);
   printf("+");
   for (int i = 0; i < quant; i++){
-    printf("\n|[%d] %s", i+1, options[i]);
+    printf("\n|%s[%d]%s %s", palette[YELLOW], i+1, palette[CYAN], options[i]);
     fill(' ', maxlen + 1 + aux - wcslen(woptions[i]));
     printf("|");
   }
@@ -136,15 +171,15 @@ int titleMenu(const char msg[], const wchar_t wmsg[], const char options[][81], 
 
   // Receives defended input from the user
   while (1){
-    printf("\n>> ");
-    scanf("%[^\n]", selection);
+    printf("\n%s>> %s", palette[CYAN], palette[GREEN]);
+    scanf("%81[^\n]", selection);
     getchar();
 
     if ((atoi(selection) > 0 || strcmp(selection, "0") == 0) && atoi(selection) <= quant){
       clearTerminal();
       return atoi(selection);
     }
-      printf("\nEscolha inválida!\n");
+      printf("\n%sEscolha inválida!\n", palette[RED]);
   }
 }
 

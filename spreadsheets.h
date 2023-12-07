@@ -1,5 +1,7 @@
 #pragma once
 
+#include "interface.h"
+
 // Data types supported by the spreadsheets
 // (TODO: Should we have a separate "CHAR" type?)
 typedef enum {

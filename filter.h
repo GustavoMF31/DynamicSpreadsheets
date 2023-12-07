@@ -1,6 +1,7 @@
 #pragma once
 
 #include "spreadsheets.h"
+#include "interface.h"
 
 // An enum for the kinds of comparisons filtering queries may perform
 // (TODO: Are these all the comparisons we will implement?)

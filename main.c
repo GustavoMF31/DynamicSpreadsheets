@@ -24,6 +24,7 @@ void showSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fileName);
 void exportSpreadsheet(Spreadsheet *mainSpreadsheet, char *name);
 void saveSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fileName);
 void information(Spreadsheet *mainSpreadsheet);
+void configurations(bool *colored);
 
 // GLOBAL MENUS
 
@@ -50,14 +51,18 @@ int main(){
     "Nova Planilha",
     "Carregar Planilha    ",
     "Informações",
+    "Configurações",
     "Sair"
   };
   const wchar_t wmainMenu[][81] = {
     L"Nova Planilha",
     L"Carregar Planilha    ",
     L"Informações",
+    L"Configurações",
     L"Sair"
   };
+
+  bool colored = false;
 
   while (true){
     clearTerminal();
@@ -68,7 +73,7 @@ int main(){
     char name[76], fileName[81];
     bool createdNow = false, backToMenu = false;
 
-    int mainSelection = menu(mainMenu, wmainMenu, 4);
+    int mainSelection = menu(mainMenu, wmainMenu, 5);
 
     switch (mainSelection){
       case 1: // "Nova Planilha"
@@ -100,7 +105,7 @@ int main(){
 
         while (true){
           clearTerminal();
-          printf("\nGerencie '%s' à sua maneira!\n", name);
+          printf("\n%sGerencie %s'%s'%s à sua maneira!\n", palette[CYAN], palette[YELLOW], name, palette[CYAN]);
 
           int loadSelection = menu(loadMenu, wloadMenu, 5);
 
@@ -130,7 +135,7 @@ int main(){
                 int columnPosition, rowPosition;
                 Type myColumnType;
 
-                printf("\nAdicione, edite e remova elementos de sua planilha!\n");
+                printf("\n%sAdicione, edite e remova elementos de sua planilha!\n", palette[CYAN]);
 
                 int editionSelection = menu(editionMenu, weditionMenu, 7);
 
@@ -183,14 +188,16 @@ int main(){
       case 3: // "Informações"
         information(&mainSpreadsheet);
         break;
-      case 4: // "Sair"
+      case 4: // "Configurações"
+        configurations(&colored);
+        break;
+      case 5: // "Sair"
         // Release the memory alocated
         freeSpreadsheet(mainSpreadsheet);
-
         break;
     }
 
-    if (mainSelection == 4) break;
+    if (mainSelection == 5) break;
   }
 
   return 0;
@@ -202,14 +209,14 @@ int main(){
 void newSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fileName, bool *createdNow){
   clearTerminal();
 
-  printf("\nCrie uma nova planilha aqui, dando suas informações iniciais.\n");
+  printf("\n%sCrie uma nova planilha aqui, dando suas informações iniciais.\n", palette[CYAN]);
   while (true){
-    printf("\nQual será o nome da nova planilha <sem acentos> ?\n\n>> ");
+    printf("\n%sQual será o nome da nova planilha <sem acentos> ?\n\n>> %s", palette[CYAN], palette[GREEN]);
     strcpy(name, "");
-    scanf("%[^\n]", name);
+    scanf("%81[^\n]", name);
     getchar();
     if (strcmp(name, "") != 0) break;
-    printf("\nInsira um nome válido!\n");
+    printf("\n%sInsira um nome válido!\n", palette[RED]);
   }
   snprintf(fileName, 81, "%s.data", name);
 
@@ -229,18 +236,18 @@ void openExistentSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fil
   int tries = 1;
 
   clearTerminal();
-  printf("\nCarregue sua planilha para acessar seus dados.\n");
+  printf("\n%sCarregue sua planilha para acessar seus dados.\n", palette[CYAN]);
 
   while (true){ // Defending the file name
-    printf("\nQual o nome da planilha que deseja acessar?\n\n>> ");
+    printf("\n%sQual o nome da planilha que deseja acessar?\n\n>> %s", palette[CYAN], palette[GREEN]);
     strcpy(name, "");
-    scanf("%[^\n]", name);
+    scanf("%81[^\n]", name);
     getchar();
 
     snprintf(fileName, 81, "%s.data", name);
     printf("\n");
     if (readFromFile(mainSpreadsheet, fileName)) break;
-    printf("\nDigite o nome de uma planilha existente.\n");
+    printf("\n%sDigite o nome de uma planilha existente.\n", palette[RED]);
 
     if (tries > 2){
       if (titleMenu("Voltar ao início?", L"Voltar ao início?", confirmation, wconfirmation, 2) == 1){
@@ -256,14 +263,14 @@ void openExistentSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fil
 
 // "Adicionar Campo"
 void addField(Spreadsheet *mainSpreadsheet, char *myColumnName, Type *myColumnType, char *name){
-  printf("\nAdicione um novo campo, correspondente a uma coluna, em sua planilha.\n");
+  printf("\n%sAdicione um novo campo, correspondente a uma coluna, em sua planilha.\n", palette[CYAN]);
                     
   // Receiving the column name
   while (true){
     bool alreadyExists = false;
-    printf("\nQual será o nome do novo campo <sem acentos> ?\n\n>> ");
+    printf("\n%sQual será o nome do novo campo <sem acentos> ?\n\n>> %s", palette[CYAN], palette[GREEN]);
     strcpy(myColumnName, "");
-    scanf("%[^\n]", myColumnName);
+    scanf("%81[^\n]", myColumnName);
     getchar();
     for (int i = 0; i < mainSpreadsheet->columns; i++){
       if (strcmp(myColumnName, mainSpreadsheet->column_names[i]) == 0){
@@ -272,11 +279,11 @@ void addField(Spreadsheet *mainSpreadsheet, char *myColumnName, Type *myColumnTy
       }
     }
     if (alreadyExists){
-      printf("\nJá existe campo com esse nome.\n");
+      printf("\n%sJá existe campo com esse nome.\n", palette[RED]);
       continue;
     }
     if (strcmp(myColumnName, "") != 0) break;
-    printf("\nInsira um nome válido.\n");
+    printf("\n%sInsira um nome válido.\n", palette[RED]);
   }
 
   const char typeMenu[][81] = {
@@ -298,25 +305,29 @@ void addField(Spreadsheet *mainSpreadsheet, char *myColumnName, Type *myColumnTy
   switch (typeSelection){
     case 1: // "Inteiro"
       *myColumnType = INT;
-      printf("\nO campo '%s', de tipo 'inteiro', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+      printf("\n%sO campo %s'%s'%s, de tipo %s'inteiro'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+            palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
     case 2: // "Racional"
       *myColumnType = DOUBLE;
-      printf("\nO campo '%s', de tipo 'racional', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+      printf("\n%sO campo %s'%s'%s, de tipo %s'racional'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+            palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
     case 3: // "Booleano"
       *myColumnType = BOOL;
-      printf("\nO campo '%s', de tipo 'booleano', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+      printf("\n%sO campo %s'%s'%s, de tipo %s'booleano'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+            palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
     case 4: // "String"
       *myColumnType = STRING;
-      printf("\nO campo '%s', de tipo 'string', foi anexado à planilha '%s' com sucesso!\n", myColumnName, name);
+      printf("\n%sO campo %s'%s'%s, de tipo %s'string'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+            palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
   }
 
   // If it is not empty in rows, instruct the user about the insertion of data in the existing rows on the new column
   if (mainSpreadsheet->rows > 0){
-    printf("\nInsira os valores a serem adicionados à nova coluna.\n");
+    printf("\n%sInsira os valores a serem adicionados à nova coluna.\n", palette[CYAN]);
     printf("\nIdentifique booleanos por 'verdadeiro' ou 'falso', e use . para delimitar a parte fracionária de racionais.\n");
   }
 
@@ -327,11 +338,11 @@ void addField(Spreadsheet *mainSpreadsheet, char *myColumnName, Type *myColumnTy
 
 // "Remover Campo"
 void removeField(Spreadsheet *mainSpreadsheet, char *myColumnName, int *columnPosition){
-  printf("\nRetire um campo da planilha.\n");
+  printf("\n%sRetire um campo da planilha.\n", palette[CYAN]);
 
   // Treats the case where the spreadsheet does not have any columns to remove
   if (mainSpreadsheet->columns == 0){
-    printf("\nA planilha atual não possui campos para remoção.\n");
+    printf("\n%sA planilha atual não possui campos para remoção.\n", palette[RED]);
     menu(backMenu, wbackMenu, 1);
     return;
   }
@@ -339,9 +350,9 @@ void removeField(Spreadsheet *mainSpreadsheet, char *myColumnName, int *columnPo
   while (true){
     bool exists = false;
 
-    printf("\nQual o nome do campo a ser excluído?\n\n>> ");
+    printf("\n%sQual o nome do campo a ser excluído?\n\n>> %s", palette[CYAN], palette[GREEN]);
     strcpy(myColumnName, "");
-    scanf("%[^\n]", myColumnName);
+    scanf("%81[^\n]", myColumnName);
     getchar();
 
     for (int i = 0; i < mainSpreadsheet->columns; i++){
@@ -353,7 +364,7 @@ void removeField(Spreadsheet *mainSpreadsheet, char *myColumnName, int *columnPo
     }
 
     if (!exists){
-      printf("\nNão há campo com esse nome na planilha.\n");
+      printf("\n%sNão há campo com esse nome na planilha.\n", palette[RED]);
       continue;
     }
 
@@ -362,24 +373,24 @@ void removeField(Spreadsheet *mainSpreadsheet, char *myColumnName, int *columnPo
 
   removeColumn(mainSpreadsheet, *columnPosition);
 
-  printf("\nO campo '%s' foi removido com sucesso!\n", myColumnName);
+  printf("\n%sO campo %s'%s'%s foi removido com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, palette[GREEN]);
 
   menu(backMenu, wbackMenu, 1);
 }
 
 // "Adicionar Linha"
 void addLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
-  printf("\nAdicione uma nova linha em qualquer posição disponível na planilha.\n");
+  printf("\n%sAdicione uma nova linha em qualquer posição disponível na planilha.\n", palette[CYAN]);
 
   if (mainSpreadsheet->rows > 0){
     while (true){
-      printf("\nQual o índice da linha que você quer incluir <de 0 a %d> ?\n\n>> ", mainSpreadsheet->rows);
+      printf("\n%sQual o índice da linha que você quer incluir %s<de 0 a %d>%s ?\n\n>> %s", palette[CYAN], palette[BLUE], mainSpreadsheet->rows, palette[CYAN], palette[GREEN]);
       strcpy(buffer, "");
-      scanf("%[^\n]", buffer);
+      scanf("%81[^\n]", buffer);
       getchar();
       
       if (atoi(buffer) <= 0 && strcmp(buffer, "0") != 0){
-        printf("\nDigite um número válido para a posição.\n");
+        printf("\n%sDigite um número válido para a posição.\n", palette[RED]);
         continue;
       }
       
@@ -387,22 +398,22 @@ void addLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
 
       if (*rowPosition >= 0 && *rowPosition <= mainSpreadsheet->rows) break;
 
-      printf("\nInsira uma posição válida.\n");
+      printf("\n%sInsira uma posição válida.\n", palette[RED]);
     }
   }
   else *rowPosition = 0;
 
-  printf("\nA linha foi criada com sucesso!\n");
+  printf("\n%sA linha foi criada com sucesso!\n", palette[GREEN]);
   
   // If it is not empty in columns, instruct the user about the insertion of data in the existing columns on the new row
   if (mainSpreadsheet->columns > 0){
-    printf("\nInsira os valores a serem adicionados à nova linha.\n");
+    printf("\n%sInsira os valores a serem adicionados à nova linha.\n", palette[CYAN]);
     printf("\nIdentifique booleanos por 'verdadeiro' ou 'falso', e use . para delimitar a parte fracionária de racionais.\n");
   }
 
   addRow(mainSpreadsheet, *rowPosition);
 
-  printf("\nLinha adicionada com sucesso na posição %d.\n", *rowPosition);
+  printf("\n%sLinha adicionada com sucesso na posição %s%d%s.\n", palette[CYAN], palette[YELLOW], *rowPosition, palette[CYAN]);
 
   menu(backMenu, wbackMenu, 1);
 }
@@ -410,24 +421,24 @@ void addLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
 // "Remover Linha"
 void deleteLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
 
-  printf("\nExclua uma linha com praticidade!\n");
+  printf("\n%sExclua uma linha com praticidade!\n", palette[CYAN]);
 
   // Treats the case where the spreadsheet does not have any rows to remove
   if (mainSpreadsheet->rows == 0){
-    printf("\nA planilha atual não possui linhas para remoção.\n");
+    printf("\n%sA planilha atual não possui linhas para remoção.\n", palette[RED]);
     menu(backMenu, wbackMenu, 1);
     return;
   }
 
   if (mainSpreadsheet->rows > 0){
     while (true){
-      printf("\nQual o índice da linha a ser eliminada <de 0 a %d> ?\n\n>> ", mainSpreadsheet->rows-1);
+      printf("\n%sQual o índice da linha a ser eliminada %s<de 0 a %d>%s ?\n\n>> %s", palette[CYAN], palette[BLUE], mainSpreadsheet->rows-1, palette[CYAN], palette[GREEN]);
       strcpy(buffer, "");
-      scanf("%[^\n]", buffer);
+      scanf("%81[^\n]", buffer);
       getchar();
       
       if (atoi(buffer) <= 0 && strcmp(buffer, "0") != 0){
-        printf("\nDigite um número válido para a posição.\n");
+        printf("\n%sDigite um número válido para a posição.\n", palette[RED]);
         continue;
       }
       
@@ -435,64 +446,65 @@ void deleteLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
 
       if (*rowPosition >= 0 && *rowPosition <= mainSpreadsheet->rows-1) break;
 
-      printf("\nInsira uma posição válida.\n");
+      printf("\n%sInsira uma posição válida.\n", palette[RED]);
     }
   }
   else *rowPosition = 0;
 
   deleteRowByIndex(mainSpreadsheet, *rowPosition);
 
-  printf("\nA linha %d foi apagada com sucesso!\n", *rowPosition);
+  printf("\n%sA linha %s%d%s foi apagada com sucesso!\n", palette[GREEN], palette[YELLOW], *rowPosition, palette[GREEN]);
 
   menu(backMenu, wbackMenu, 1);
 }
 
 // "Editar Célula"
 void editCell(Spreadsheet *mainSpreadsheet, char *buffer, int *columnPosition, int *rowPosition){
-  printf("\nModifique o valor de uma célula em específico.\n");
+  printf("\n%sModifique o valor de uma célula em específico.\n", palette[CYAN]);
 
   // Empty spreadsheets do not have cells to edit
   if (mainSpreadsheet->columns == 0 || mainSpreadsheet->rows == 0){
-    printf("\nNão existem células na planilha para serem editadas.\n");
+    printf("\n%sNão existem células na planilha para serem editadas.\n", palette[RED]);
     menu(backMenu, wbackMenu, 1);
     return;
   }
 
   *rowPosition = *columnPosition = -1;
   while (true){
-    printf("\nQual a posição da célula <linha> <coluna> ?\n\n>> ");
+    printf("\n%sQual a posição da célula %s<linha> <coluna>%s ?\n\n>> %s", palette[CYAN], palette[BLUE], palette[CYAN], palette[GREEN]);
     strcpy(buffer, "");
-    scanf("%[^\n]", buffer);
+    scanf("%81[^\n]", buffer);
     getchar();
     
     sscanf(buffer, "%d %d", rowPosition, columnPosition);
 
     if (*rowPosition >= 0 && *rowPosition <= mainSpreadsheet->rows-1 && *columnPosition >= 0 && *columnPosition <= mainSpreadsheet->columns-1) break;
 
-    printf("\nDigite coordenadas existentes na planilha.\n");
+    printf("\n%sDigite coordenadas existentes na planilha.\n", palette[RED]);
   }
 
-  printf("\nA célula foi encontrada!");
-  printf("\nSeu valor atual é '");
+  printf("\n%sA célula foi encontrada!", palette[GREEN]);
+  printf("\nSeu valor atual é %s", palette[YELLOW]);
   printCellByIndex(*mainSpreadsheet, *rowPosition, *columnPosition, stdout);
-  printf("'.\n");
+  printf("%s.\n", palette[GREEN]);
 
   updateCellValue(*mainSpreadsheet, *rowPosition, *columnPosition);
 
-  printf("\nA célula na linha <%d> e campo <%s> foi atualizada para '", *rowPosition, mainSpreadsheet->column_names[*columnPosition]);
+  printf("\n%sA célula na linha %s<%d>%s e campo %s<%s>%s foi atualizada para %s", palette[CYAN], palette[YELLOW], *rowPosition, palette[CYAN],
+        palette[YELLOW], mainSpreadsheet->column_names[*columnPosition], palette[CYAN], palette[YELLOW]);
   printCellByIndex(*mainSpreadsheet, *rowPosition, *columnPosition, stdout);
-  printf("'.\n");
+  printf("%s.\n", palette[CYAN]);
 
   menu(backMenu, wbackMenu, 1);
 }
 
 // "Ordenar Planilha"
 void sortSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *myColumnName, int *columnPosition){
-  printf("\nOrdene a planilha de acordo com os dados de uma coluna.\n");
+  printf("\n%sOrdene a planilha de acordo com os dados de uma coluna.\n", palette[CYAN]);
 
   // Defends empty spreadsheets
   if (mainSpreadsheet->columns == 0){
-    printf("\nA planilha atual não possui nenhum campo para ser ordenado.\n");
+    printf("\n%sA planilha atual não possui nenhum campo para ser ordenado.\n", palette[RED]);
     menu(backMenu, wbackMenu, 1);
     return;
   }
@@ -500,9 +512,9 @@ void sortSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *myColumnNam
   while (true){
     bool exists = false, isBool = false;
 
-    printf("\nQual o nome do campo a ser considerado?\n\n>> ");
+    printf("\n%sQual o nome do campo a ser considerado?\n\n>> %s", palette[CYAN], palette[GREEN]);
     strcpy(myColumnName, "");
-    scanf("%[^\n]", myColumnName);
+    scanf("%81[^\n]", myColumnName);
     getchar();
 
     for (int i = 0; i < mainSpreadsheet->columns; i++){
@@ -518,11 +530,11 @@ void sortSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *myColumnNam
     }
 
     if (!exists){
-      printf("\nNão há campo com esse nome na planilha.\n");
+      printf("\n%sNão há campo com esse nome na planilha.\n", palette[RED]);
       continue;
     }
     else if (isBool){
-      printf("\nImpossível ordenar por valor booleano.\n");
+      printf("\n%sImpossível ordenar por valor booleano.\n", palette[RED]);
       continue;
     }
 
@@ -542,20 +554,20 @@ void sortSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *myColumnNam
 
     if (titleMenu("Ordenar de qual forma?", L"Ordenar de qual forma?", sortMenu, wsortMenu, 2) == 1){
       ascendingSortByValue(mainSpreadsheet, *columnPosition);
-      printf("\nA planilha foi ordenada, a partir do campo '%s', em ordem crescente de valor.\n", myColumnName);
+      printf("\n%sA planilha foi ordenada, a partir do campo %s'%s'%s, em ordem crescente de valor.\n", palette[CYAN], palette[YELLOW], myColumnName, palette[CYAN]);
     }
     else {
       descendingSortByValue(mainSpreadsheet, *columnPosition);
-      printf("\nA planilha foi ordenada, a partir do campo '%s', em ordem decrescente de valor.\n", myColumnName);
+      printf("\n%sA planilha foi ordenada, a partir do campo %s'%s'%s, em ordem decrescente de valor.\n", palette[CYAN], palette[YELLOW], myColumnName, palette[CYAN]);
     }
   }
   else {
     clearTerminal();
     sortByAlphabet(mainSpreadsheet, *columnPosition);
-    printf("\nA planilha foi ordenada, a partir do campo '%s', em ordem alfabética.\n", myColumnName);
+    printf("\n%sA planilha foi ordenada, a partir do campo %s'%s'%s, em ordem alfabética.\n", palette[CYAN], palette[YELLOW], myColumnName, palette[CYAN]);
   }
 
-  printf("\nPlanilha: %s\n\n", name);
+  printf("\n%sPlanilha: %s%s\n\n", palette[PURPLE], palette[YELLOW], name);
 
   displaySpreadsheet(*mainSpreadsheet);
 
@@ -564,7 +576,7 @@ void sortSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *myColumnNam
 
 // "Planilha Completa"
 void completeDisplay(Spreadsheet *mainSpreadsheet, char *name){
-  printf("\nPlanilha: %s\n\n", name);
+  printf("\n%sPlanilha: %s%s\n\n", palette[PURPLE], palette[YELLOW], name);
 
   displaySpreadsheet(*mainSpreadsheet);
 
@@ -573,10 +585,11 @@ void completeDisplay(Spreadsheet *mainSpreadsheet, char *name){
 
 // "Planilha Filtrada"
 void filteredDisplay(Spreadsheet *mainSpreadsheet, char *name, char* fileName){
-  printf("\nDiga quais filtros deseja aplicar à exibição de sua planilha.");
-  printf("\nIndique cada filtro em uma linha, seguindo o formato <campo> <operador> <literal/campo>.");
-  printf("\nIdentifique strings por aspas duplas (\"), booleanos por 'verdadeiro' ou 'falso', e use . para delimitar a parte fracionária de racionais.");
-  printf("\nOBS.: Insira racionais na forma mais reduzida possível.");
+  printf("\n%sDiga quais filtros deseja aplicar à exibição de sua planilha.", palette[CYAN]);
+  printf("\nIndique cada filtro em uma linha, seguindo o formato %s<literal/campo> <operador> <literal/campo>%s.", palette[BLUE], palette[CYAN]);
+  printf("\nLembre-se de incluir, pelo menos, o nome de um campo no filtro.\n");
+  printf("\nIdentifique strings por aspas duplas (\"\"), booleanos por 'verdadeiro' ou 'falso', e use . para delimitar a parte fracionária de racionais.");
+  printf("\nOBS.: Insira racionais na forma mais reduzida possível.\n");
   printf("\nPule a linha duas vezes para parar.\n");
 
   printf("\nOperadores disponíveis:\n");
@@ -595,9 +608,9 @@ void filteredDisplay(Spreadsheet *mainSpreadsheet, char *name, char* fileName){
   readFromFile(&auxSpreadsheet, fileName);
 
   while (true){
-    printf(">> ");
+    printf("%s>> %s", palette[CYAN], palette[GREEN]);
     strcpy(buffer, "");
-    scanf("%[^\n]", buffer);
+    scanf("%81[^\n]", buffer);
     getchar();
     if (strcmp(buffer, "") == 0) break;
 
@@ -607,7 +620,7 @@ void filteredDisplay(Spreadsheet *mainSpreadsheet, char *name, char* fileName){
     filterSpreadsheet(&auxSpreadsheet, condition);
   }
 
-  printf("\nPlanilha: %s\n\n", name);
+  printf("\n%sPlanilha: %s%s\n\n", palette[PURPLE], palette[YELLOW], name);
 
   displaySpreadsheet(auxSpreadsheet);
 
@@ -619,11 +632,11 @@ void filteredDisplay(Spreadsheet *mainSpreadsheet, char *name, char* fileName){
 // "Exibir Planilha"
 void showSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fileName){
   while (true){
-    printf("\nExiba sua planilha integralmente ou de maneira personalizada!\n");
+    printf("\n%sExiba sua planilha integralmente ou de maneira filtrada!\n", palette[CYAN]);
 
     // Tells the user to insert data to the spreadsheet before showing it
     if (mainSpreadsheet->columns == 0 || mainSpreadsheet->rows == 0){
-      printf("\nParece que sua planilha não tem dados o suficiente.");
+      printf("\n%sParece que sua planilha não tem dados o suficiente.", palette[RED]);
       printf("\nVolte novamente depois de alimentá-la.\n");
       menu(backMenu, wbackMenu, 1);
       break;
@@ -659,34 +672,34 @@ void showSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fileName){
 
 // "Exportar Planilha como CSV"
 void exportSpreadsheet(Spreadsheet *mainSpreadsheet, char *name){
-  printf("\nUm arquivo .csv será criado com o nome de sua planilha.\n");
+  printf("\n%sUm arquivo .csv será criado com o nome de sua planilha.\n", palette[CYAN]);
 
   char csvName[81];
   snprintf(csvName, 81, "%s.csv", name);
 
   exportAsCsv(*mainSpreadsheet, csvName);
 
-  printf("\nO arquivo '%s' foi criado com sucesso!\n", csvName);
+  printf("\n%sO arquivo %s'%s'%s foi criado com sucesso!\n", palette[GREEN], palette[YELLOW], csvName, palette[GREEN]);
 
   menu(backMenu, wbackMenu, 1);
 }
 
 // "Salvar Planilha"
 void saveSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fileName){
-  printf("\nSua planilha será salva em um arquivo binário para uso futuro.\n");
+  printf("\n%sSua planilha será salva em um arquivo binário para uso futuro.\n", palette[CYAN]);
 
   snprintf(fileName, 81, "%s.data", name);
 
   writeToFile(*mainSpreadsheet, fileName);
 
-  printf("\nO arquivo '%s' foi salvo com sucesso!\n", fileName);
+  printf("\n%sO arquivo %s'%s'%s foi salvo com sucesso!\n", palette[GREEN], palette[YELLOW], fileName, palette[GREEN]);
 
   menu(backMenu, wbackMenu, 1);
 }
 
 // "Informações"
 void information(Spreadsheet *mainSpreadsheet){
-  printf("\nEste programa consiste em uma ferramenta de auxílio para o gerenciamento dinâmico de planilhas.");
+  printf("\n%sEste programa consiste em uma ferramenta de auxílio para o gerenciamento dinâmico de planilhas.", palette[CYAN]);
   printf("\nValendo-se de uma interface amigável e didática, procuramos fornecer uma ótima solução para qualquer");
   printf("\nsituação em que se precise de um grau de organização.\n");
 
@@ -716,10 +729,35 @@ void information(Spreadsheet *mainSpreadsheet){
   if (exampleMenu == 1){
     *mainSpreadsheet = example();
     writeToFile(*mainSpreadsheet, "exemplo.data");
-    printf("\nUma planilha de exemplo foi gerada com nome 'exemplo' e guardada no arquivo 'exemplo.data'.");
-    printf("\nVocê pode acessá-la em 'Carregar Planilha'.\n");
+    printf("\n%sUma planilha de exemplo foi gerada com nome %s'exemplo'%s e guardada no arquivo %s'exemplo.data'%s.", palette[CYAN], palette[YELLOW], palette[CYAN],
+          palette[YELLOW], palette[CYAN]);
+    printf("\n%sVocê pode acessá-la em %s'Carregar Planilha'%s.\n", palette[CYAN], palette[YELLOW], palette[CYAN]);
     menu(backMenu, wbackMenu, 1);
   }
+}
+
+// "Configurações"
+void configurations(bool *colored){
+  printf("\n%sPersonalize sua experiência com o programa aqui!\n", palette[CYAN]);
+
+  int configMenu;
+
+  if (!*colored){
+    configMenu = titleMenu("Deseja ativar a interface colorida?", L"Deseja ativar a interface colorida?", confirmation, wconfirmation, 2);
+    if (configMenu == 1) setColor();
+    *colored = true;
+
+    printf("\n%sEsquema de cores ativado!\n", palette[GREEN]);
+  }
+  else {
+    configMenu = titleMenu("Deseja desativar a interface colorida?", L"Deseja desativar a interface colorida?", confirmation, wconfirmation, 2);
+    if (configMenu == 1) clearColor();
+    *colored = false;
+
+    printf("\n%sEsquema de cores desativado!\n", palette[GREEN]);
+  }
+
+  menu(backMenu, wbackMenu, 1);
 }
 
 /*

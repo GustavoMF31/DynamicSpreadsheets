@@ -5,6 +5,7 @@
 
 #include "filter.h"
 #include "spreadsheets.h"
+#include "interface.h"
 
 // Determines the value associated to a term, looking up, if necessary,
 // the data in the mentioned spreadsheet column
@@ -109,31 +110,31 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
   
   // Taking care of the disparities between the types of the left and right terms
   if (!leftTermFound && !rightTermFound){
-    printf("\nDeve haver pelo menos um campo no filtro.\n\n");
+    printf("\n%sDeve haver pelo menos um campo no filtro.\n\n", palette[RED]);
     return false;
   }
   else if (leftTermFound && rightTermFound && leftTermType != rightTermType){
-    printf("\nOs tipos dos campos inseridos são incompatíveis!\n\n");
+    printf("\n%sOs tipos dos campos inseridos são incompatíveis!\n\n", palette[RED]);
     return false;
   }
   else if ((!rightTermFound && (leftTermType == INT) && (atoi(rightTerm) == 0) && (strcmp(rightTerm, "0") != 0)) ||
           (!leftTermFound && (rightTermType == INT) && (atoi(leftTerm) == 0) && (strcmp(leftTerm, "0") != 0))){
-    printf("\nO valor do literal deveria ser um inteiro!\n\n");
+    printf("\n%sO valor do literal deveria ser um inteiro!\n\n", palette[RED]);
     return false;
   }
   else if ((!rightTermFound && (leftTermType == DOUBLE) && (atof(rightTerm) == 0) && (strcmp(rightTerm, "0") != 0)) ||
           (!leftTermFound && (rightTermType == DOUBLE) && (atof(leftTerm) == 0) && (strcmp(leftTerm, "0") != 0))){
-    printf("\nO valor do literal deveria ser um racional!\n\n");
+    printf("\n%sO valor do literal deveria ser um racional!\n\n", palette[RED]);
     return false;
   }
   else if ((!rightTermFound && (leftTermType == BOOL) && (strcmp(rightTerm, "verdadeiro") != 0) && (strcmp(rightTerm, "falso") != 0)) || 
           (!leftTermFound && (rightTermType == BOOL) && (strcmp(leftTerm, "verdadeiro") != 0) && (strcmp(leftTerm, "falso") != 0))){
-    printf("\nO valor do literal deveria ser um booleano!\n\n");
+    printf("\n%sO valor do literal deveria ser um booleano!\n\n", palette[RED]);
     return false;
   }
   else if ((!rightTermFound && (leftTermType == STRING) && (rightTerm[0] != '"') && (rightTerm[strlen(rightTerm)-1] != '"')) || 
           (!leftTermFound && (rightTermType == STRING) && (leftTerm[0] != '"') && (leftTerm[strlen(leftTerm)-1] != '"'))){
-    printf("\nO valor do literal deveria ser uma string delimitada por aspas duplas!\n\n");
+    printf("\n%sO valor do literal deveria ser uma string delimitada por aspas duplas!\n\n", palette[RED]);
     return false;
   }
 
@@ -198,12 +199,12 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
   else if (strcmp(operator, "<=") == 0) cond->op = LTE;
   else if (strcmp(operator, "=") == 0) cond->op = EQ;
   else {
-    printf("\nO operador inserido é inválido.\n\n");
+    printf("\n%sO operador inserido é inválido.\n\n", palette[RED]);
     return false;
   }
 
   if (cond->op != EQ && (leftTermType == BOOL || rightTermType == BOOL)){
-    printf("\nSomente são aceitas comparações de igualdade para o tipo booleano.\n\n");
+    printf("\n%sSomente são aceitas comparações de igualdade para o tipo booleano.\n\n", palette[RED]);
     return false;
   }
 

@@ -10,7 +10,7 @@
 // The "noreturn" attribute informs the compiler that this function never returns
 // and helps to get rid of wrong warnings about forgetting a return statement
 __attribute__ ((noreturn)) void badType(Type t, char* functionName){
-  printf("ERROR: Got unrecognized type %d when executing %s\n", t, functionName);
+  printf("%s%sERROR: Got unrecognized type %d when executing %s\n", palette[BOLD], palette[RED], t, functionName);
   exit(1);
 }
 
@@ -110,7 +110,7 @@ void printCellByIndex(Spreadsheet s, int row, int col, FILE *file){
 // Ensures a file has been opened successfully (Exits the program if wanted)
 bool checkOpen(FILE *file, char *file_name, bool leave){
   if (file != NULL) return true;
-  printf("Não foi possível abrir arquivo %s", file_name);
+  printf("%sNão foi possível abrir arquivo %s%s%s", palette[RED], palette[YELLOW], file_name, palette[RED]);
   if (leave) exit(1);
   return false;
 }
@@ -276,15 +276,16 @@ void updateCellValue(Spreadsheet s, int row, int col) {
   while (true){
     error = false;
 
-    printf("\nDigite o novo valor da célula da linha <%d> e campo <%s> : ", row, s.column_names[col]);
+    printf("\n%sDigite o novo valor da célula da linha %s<%d>%s e campo %s<%s>%s >> %s", palette[CYAN], palette[BLUE], row, palette[CYAN], palette[BLUE],
+          s.column_names[col], palette[CYAN], palette[GREEN]);
     strcpy(entry, "");
-    scanf("%[^\n]", entry);
+    scanf("%81[^\n]", entry);
     getchar();
 
     switch (s.column_types[col]) {
       case BOOL:
         if (strcmp(entry, "verdadeiro") != 0 && strcmp(entry, "falso") != 0){
-          printf("\nInsira um valor booleano válido.\n");
+          printf("\n%sInsira um valor booleano válido.\n", palette[RED]);
           error = true;
           break;
         }
@@ -298,7 +299,7 @@ void updateCellValue(Spreadsheet s, int row, int col) {
           *((int *) getCell(s, row, col)) = int_entry;
         }
         else {
-          printf("\nInsira um valor inteiro válido.\n");
+          printf("\n%sInsira um valor inteiro válido.\n", palette[RED]);
           error = true;
         }
         break;
@@ -311,7 +312,7 @@ void updateCellValue(Spreadsheet s, int row, int col) {
           *((double *) getCell(s, row, col)) = double_entry;
         }
         else {
-          printf("\nInsira um valor racional válido.\n");
+          printf("\n%sInsira um valor racional válido.\n", palette[RED]);
           error = true;
         }
         break;
@@ -707,14 +708,14 @@ void displaySpreadsheet(Spreadsheet s){
   }
 
   // Printf the header
-  printf("+");
+  printf("%s+", palette[CYAN]);
   fill('-', auxinicio+s.columns-1);
   printf("+\n|");
 
   // Prints the name of each section (each collumn)
   for (int col = 0; col < s.columns; col++){
     int size=strlen(s.column_names[col]);
-    printf("%s", s.column_names[col]);
+    printf("%s%s%s%s%s", palette[BOLD], palette[YELLOW], s.column_names[col], palette[CLEAR], palette[CYAN]);
     fill(' ', columnWidths[col]-size);
     printf("|");
   }
@@ -726,7 +727,7 @@ void displaySpreadsheet(Spreadsheet s){
   Row *current = s.firstRow; // pointer starts by pointing to the first row
   while (current != NULL){     // while the row exists
     for (int col=0; col<s.columns; col++){ // advances to the next column
-      printf("|");
+      printf("%s%s|%s%s", palette[CLEAR], palette[CYAN], palette[BOLD], (col%2) ? palette[BLUE] : palette[PURPLE]);
       char *cell = current->entries + columnOffset(s, col); //cell points to the space in memory where the data is stored
       Type cellType = s.column_types[col];  // celltype recieves the type of the column
       // prints the information of the cell depending on its type
@@ -754,8 +755,8 @@ void displaySpreadsheet(Spreadsheet s){
       
       fill(' ', columnWidths[col]-cellSize);
     }
-    printf("|\n");                   // \n to the next row
-    current = current->next;  // pointer points to the next row
+    printf("%s%s|\n", palette[CLEAR], palette[CYAN]);  // \n to the next row
+    current = current->next;                           // pointer points to the next row
   }
   // prints the bottom header
   printf("+");
