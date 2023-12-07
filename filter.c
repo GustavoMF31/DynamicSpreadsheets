@@ -94,7 +94,7 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
 
   sscanf(buffer, "%s %s %s", leftTerm, operator, rightTerm);
                       
-  // Iterating on the column names to find out if the left term (and ocasionally the right term) exists
+  // Iterating on the column names to find out if the left term and/or the right term exist
   for (int i = 0; i < s.columns; i++){
     if (strcmp(leftTerm, s.column_names[i]) == 0){
       leftTermFound = true;
@@ -107,29 +107,61 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
   }
   
   // Taking care of the disparities between the types of the left and right terms
-  if (!leftTermFound){
-    printf("\nO primeiro termo não é um campo da planilha.\n\n");
+  if (!leftTermFound && !rightTermFound){
+    printf("\nDeve haver pelo menos um campo no filtro.\n\n");
     return false;
   }
-  else if (rightTermFound && leftTermType != rightTermType){
+  else if (leftTermFound && rightTermFound && leftTermType != rightTermType){
     printf("\nOs tipos dos campos inseridos são incompatíveis!\n\n");
     return false;
   }
-  else if ((leftTermType == INT) && ((rightTerm) == 0) && (strcmp(rightTerm, "0") != 0)){
-    printf("\nO 2º valor deveria ser um inteiro!\n\n");
+  else if ((!rightTermFound && (leftTermType == INT) && (atoi(rightTerm) == 0) && (strcmp(rightTerm, "0") != 0)) ||
+          (!leftTermFound && (rightTermType == INT) && (atoi(leftTerm) == 0) && (strcmp(leftTerm, "0") != 0))){
+    printf("\nO valor do literal deveria ser um inteiro!\n\n");
     return false;
   }
-  else if ((leftTermType == DOUBLE) && ((rightTerm) == 0) && (strcmp(rightTerm, "0") != 0)){
-    printf("\nO 2º valor deveria ser um racional!\n\n");
+  else if ((!rightTermFound && (leftTermType == DOUBLE) && (atof(rightTerm) == 0) && (strcmp(rightTerm, "0") != 0)) ||
+          (!leftTermFound && (rightTermType == DOUBLE) && (atof(leftTerm) == 0) && (strcmp(leftTerm, "0") != 0))){
+    printf("\nO valor do literal deveria ser um racional!\n\n");
     return false;
   }
-  else if ((leftTermType == BOOL) && (strcmp(rightTerm, "verdadeiro") != 0) && (strcmp(rightTerm, "falso") != 0)){
-    printf("\nO 2º valor deveria ser um booleano!\n\n");
+  else if ((!rightTermFound && (leftTermType == BOOL) && (strcmp(rightTerm, "verdadeiro") != 0) && (strcmp(rightTerm, "falso") != 0)) || 
+          (!leftTermFound && (rightTermType == BOOL) && (strcmp(leftTerm, "verdadeiro") != 0) && (strcmp(leftTerm, "falso") != 0))){
+    printf("\nO valor do literal deveria ser um booleano!\n\n");
+    return false;
+  }
+  else if ((!rightTermFound && (leftTermType == STRING) && (rightTerm[0] != '"') && (rightTerm[strlen(rightTerm)-1] != '"')) || 
+          (!leftTermFound && (rightTermType == STRING) && (leftTerm[0] != '"') && (leftTerm[strlen(leftTerm)-1] != '"'))){
+    printf("\nO valor do literal deveria ser uma string delimitada por aspas duplas!\n\n");
     return false;
   }
 
-  cond->leftTerm.isLiteral = false;
-  strncpy(cond->leftTerm.expr.columnName, leftTerm, 81);
+  if (leftTermFound){ // If the left term is a column
+    cond->leftTerm.isLiteral = false;
+    strncpy(cond->leftTerm.expr.columnName, leftTerm, 81);
+  }
+  else { // Else, it is a literal
+    cond->leftTerm.isLiteral = true;
+    cond->leftTerm.expr.constant.literalType = rightTermType;
+    switch (cond->leftTerm.expr.constant.literalType){
+      case INT:
+        cond->leftTerm.expr.constant.literal.intValue = atoi(leftTerm);
+        break;
+      case DOUBLE:
+        cond->leftTerm.expr.constant.literal.doubleValue = atof(leftTerm);
+        break;
+      case STRING:
+        leftTerm[strlen(leftTerm)-1] = '\0';
+        sscanf(leftTerm, "\"%s", leftTerm);
+        strncpy(cond->leftTerm.expr.constant.literal.stringValue, leftTerm, 81);
+        break;
+      case BOOL:
+        cond->leftTerm.expr.constant.literal.boolValue = (strcmp(leftTerm, "verdadeiro") == 0) ? true : false;
+        break;
+      default:
+        badType(rightTermType, "inputToFilter");
+    }
+  }
 
   if (rightTermFound){ // If the right term is a column
     cond->rightTerm.isLiteral = false;
@@ -146,7 +178,8 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
         cond->rightTerm.expr.constant.literal.doubleValue = atof(rightTerm);
         break;
       case STRING:
-        sscanf(rightTerm, "\"%s\"", rightTerm);
+        rightTerm[strlen(rightTerm)-1] = '\0';
+        sscanf(rightTerm, "\"%s", rightTerm);
         strncpy(cond->rightTerm.expr.constant.literal.stringValue, rightTerm, 81);
         break;
       case BOOL:
@@ -165,6 +198,11 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
   else if (strcmp(operator, "=") == 0) cond->op = EQ;
   else {
     printf("\nO operador inserido é inválido.\n\n");
+    return false;
+  }
+
+  if (cond->op != EQ && (leftTermType == BOOL || rightTermType == BOOL)){
+    printf("\nSomente são aceitas comparações de igualdade para o tipo booleano.\n\n");
     return false;
   }
 

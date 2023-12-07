@@ -32,6 +32,7 @@ void freeRow(Row *row);
 void deleteRow(Spreadsheet *s, Row **prev, Row *curr);
 void deleteRowByIndex(Spreadsheet *s, int pos);
 void initializeSpreadsheet(Spreadsheet *s);
+void printCellByIndex(Spreadsheet s, int row, int col, FILE *file);
 void writeToFile(Spreadsheet s, char *file_name);
 bool readFromFile(Spreadsheet *s, char *file_name);
 Spreadsheet example();

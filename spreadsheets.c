@@ -239,18 +239,22 @@ void deleteRowByIndex(Spreadsheet *s, int pos){
   s->rows--;
 }
 
-// Adds a new row after a specific row
+// Adds a new row in a specified index
 void addRow(Spreadsheet *s, int row1) {
   Row *newRow = malloc(sizeof(*newRow));
   newRow->entries = malloc(rowSize(*s));
 
-  if (row1 == 0){
+  if (s->rows == 0){
     s->firstRow = newRow;
     newRow->next = NULL;
   }
+  else if (row1 == 0){
+    newRow->next = s->firstRow;
+    s->firstRow = newRow;
+  }
   else {
-    Row **currentRow = &s->firstRow;
-    for (int i = 0; i < row1; i++) {
+    Row **currentRow = &(s->firstRow);
+    for (int i = 0; i < row1 - 1; i++) {
       currentRow = &(*currentRow)->next;
     }
     newRow->next = (*currentRow)->next;
@@ -259,45 +263,64 @@ void addRow(Spreadsheet *s, int row1) {
 
   s->rows++;
   for (int i = 0; i < s->columns; i++) {
-    updateCellValue(*s, row1+1, i);
+    updateCellValue(*s, row1, i);
   }
 }
 
-// NEEDS FIXING!
 // Updates the value of a cell at a specific position
 void updateCellValue(Spreadsheet s, int row, int col) {
-  bool bool_entry;
+  bool bool_entry, error;
   int int_entry;
-  char temp[11], string_entry[81];
+  char entry[81];
   double double_entry;
-  printf("Digite o novo valor da célula da linha <%d> e campo <%s> : ", row, s.column_names[col]);
-  switch (s.column_types[col]) {
-    case BOOL:
-      scanf("%s", temp);
-      if (!strcmp(temp, "verdadeiro")){
-        bool_entry = true;
-      } else {
-        bool_entry = false;
-      }
-      *((bool *) getCell(s, row, col)) = bool_entry;
-      break;
-    case INT:
-      scanf("%d", &int_entry);
-      *((int *) getCell(s, row, col)) = int_entry;
-      break;
-    case STRING:
-      scanf("%s", string_entry);
-      strncpy(getCell(s, row, col), string_entry, 81);
-      break;
-    case DOUBLE:
-      scanf("%lf", &double_entry);
-      *((double *) getCell(s, row, col)) = double_entry;
-      break;
-    default:
-      badType(s.column_types[col], "updateCellValue");
-      break;
+  while (true){
+    error = false;
+
+    printf("\nDigite o novo valor da célula da linha <%d> e campo <%s> : ", row, s.column_names[col]);
+    strcpy(entry, "");
+    scanf("%[^\n]", entry);
+    getchar();
+
+    switch (s.column_types[col]) {
+      case BOOL:
+        if (strcmp(entry, "verdadeiro") != 0 && strcmp(entry, "falso") != 0){
+          printf("\nInsira um valor booleano válido.\n");
+          error = true;
+          break;
+        }
+        else if (strcmp(entry, "verdadeiro") == 0) bool_entry = true;
+        else bool_entry = false;
+        *((bool *) getCell(s, row, col)) = bool_entry;
+        break;
+      case INT:
+        if (atoi(entry) != 0 || strcmp(entry, "0") == 0) {
+          int_entry = atoi(entry);
+          *((int *) getCell(s, row, col)) = int_entry;
+        }
+        else {
+          printf("\nInsira um valor inteiro válido.\n");
+          error = true;
+        }
+        break;
+      case STRING:
+        strncpy(getCell(s, row, col), entry, 81);
+        break;
+      case DOUBLE:
+        if (atof(entry) != 0 || strcmp(entry, "0") == 0) {
+          double_entry = atof(entry);
+          *((double *) getCell(s, row, col)) = double_entry;
+        }
+        else {
+          printf("\nnsira um valor racional válido.\n");
+          error = true;
+        }
+        break;
+      default:
+        badType(s.column_types[col], "updateCellValue");
+    }
+
+    if (!error) break;
   }
-  getchar();
 }
 
 // Adds a column after the last column
@@ -717,3 +740,41 @@ void displaySpreadsheet(Spreadsheet s){
   fill('-', auxinicio + s.columns-1);
   printf("+\n");
 }
+
+
+/*
+void ascendingSortByValue(Spreadsheet *s, int col) {
+  int qntRows = s->rows;
+  bool done = false;
+  Row *aux = s->firstRow;
+  bool comp;
+
+  if (s->column_types[col] == STRING || s->column_types[col] == BOOL) return;
+
+  while(!done) {
+    done = true;
+    for (int i = 0; i < qntRows-1; i++) {
+      if (s->column_types[col] == INT) comp = *(int*)getCell(*s, i+1, col) < *(int*)getCell(*s, i, col);
+      else comp = *(double*)getCell(*s, i+1, col) < *(double*)getCell(*s, i, col);
+      if (comp) {
+        if (i != 0) {
+          Row *aux2 = getRow(*s, i+1)->next;
+          Row *aux3 = getRow(*s, i);
+          Row *aux4 = getRow(*s, i-1);
+          aux4->next = getRow(*s, i+1);
+          aux3->next = aux2;
+          getRow(*s, i)->next = aux3;
+          done = false;
+        } else {
+          Row *aux2 = aux;
+          s->firstRow = getRow(*s, 1);
+          aux2->next = s->firstRow->next;
+          s->firstRow->next = aux2;
+          done = false;
+        }
+      }
+    }
+    qntRows--;
+  }
+}
+*/

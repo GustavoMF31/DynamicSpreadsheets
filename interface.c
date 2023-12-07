@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
+#include <time.h>
+
+#include "interface.h"
 
 // Clears the console terminal
 void clearTerminal() {
@@ -10,6 +13,24 @@ void clearTerminal() {
   #else
       system("clear");
   #endif
+}
+
+// Delays the stream, accepting fractions of seconds
+void wait(float sec){
+  struct timespec delay;
+  delay.tv_sec = (time_t)sec;
+  delay.tv_nsec = (long int)(sec - delay.tv_sec) * 1000000000;
+  nanosleep(&delay, NULL);
+}
+
+// Simulates a loading section after a given message
+void loading(char msg[], float duration){
+  printf("%s", msg);
+  for (int i = 0; i < 3; i++){
+    wait(duration/3);
+    printf(".");
+    fflush(stdout);
+  }
 }
 
 // Fills the terminal with n occurrences of the specified character
@@ -59,8 +80,8 @@ int menu(const char options[][81], const wchar_t woptions[][81], int quant){
   while (1){
     printf("\n>> ");
     scanf("%[^\n]", selection);
-
     getchar();
+    
     if ((atoi(selection) > 0 || strcmp(selection, "0") == 0) && atoi(selection) <= quant){
       clearTerminal();
       return atoi(selection);
@@ -117,9 +138,9 @@ int titleMenu(const char msg[], const wchar_t wmsg[], const char options[][81], 
   while (1){
     printf("\n>> ");
     scanf("%[^\n]", selection);
+    getchar();
 
     if ((atoi(selection) > 0 || strcmp(selection, "0") == 0) && atoi(selection) <= quant){
-      getchar(); 
       clearTerminal();
       return atoi(selection);
     }
