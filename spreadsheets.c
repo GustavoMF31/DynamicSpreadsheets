@@ -467,29 +467,35 @@ void removeColumn(Spreadsheet *s, int col) {
 void ascendingSortByValue(Spreadsheet *s, int col) {
   int qntRows = s->rows;
   bool done = false;
-  Row *aux = s->firstRow;
-
+  Row *actualNext = s->firstRow->next;
+  Row *actual = s->firstRow;
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if (*getCell(*s, i+1, col) < *getCell(*s, i, col) ) {
-        if (i != 0) {
-          Row *aux2 = getRow(*s, i+1)->next;
-          Row *aux3 = getRow(*s, i);
-          Row *aux4 = getRow(*s, i-1);
-          aux4->next = getRow(*s, i+1);
-          aux3->next = aux2;
-          getRow(*s, i)->next = aux3;
-          done = false;
-        } else {
-          Row *aux2 = aux;
-          s->firstRow = getRow(*s, i+1);
-          aux2->next = s->firstRow->next;
-          s->firstRow->next = aux2;
-          done = false;
-        }
+      if (*(actualNext->entries+columnOffset(*s, col)) < *(actual->entries+columnOffset(*s, col))) { 
+      if (actual == s->firstRow) {
+        Row *aux = actualNext->next;
+        s->firstRow = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      } else {
+        Row *aux = actualNext->next;
+        Row *beforeActual = getRow(*s, i-1);
+        beforeActual->next = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      }
+      actual = actualNext->next;
+      actualNext = actual->next;
+      } else {
+        actual = actual->next;
+        actualNext = actualNext->next;
       }
     }
+    actual = s->firstRow;
+    actualNext = s->firstRow->next;
     qntRows--;
   }
 }
@@ -498,29 +504,35 @@ void ascendingSortByValue(Spreadsheet *s, int col) {
 void descendingSortByValue(Spreadsheet *s, int col) {
   int qntRows = s->rows;
   bool done = false;
-  Row *aux = s->firstRow;
-
+  Row *actualNext = s->firstRow->next;
+  Row *actual = s->firstRow;
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if (*getCell(*s, i+1, col) > *getCell(*s, i, col) ) {
-        if (i != 0) {
-          Row *aux2 = getRow(*s, i+1)->next;
-          Row *aux3 = getRow(*s, i);
-          Row *aux4 = getRow(*s, i-1);
-          aux4->next = getRow(*s, i+1);
-          aux3->next = aux2;
-          getRow(*s, i)->next = aux3;
-          done = false;
-        } else {
-          Row *aux2 = aux;
-          s->firstRow = getRow(*s, i+1);
-          aux2->next = s->firstRow->next;
-          s->firstRow->next = aux2;
-          done = false;
-        }
+      if (*(actualNext->entries+columnOffset(*s, col)) > *(actual->entries+columnOffset(*s, col))) { 
+      if (actual == s->firstRow) {
+        Row *aux = actualNext->next;
+        s->firstRow = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      } else {
+        Row *aux = actualNext->next;
+        Row *beforeActual = getRow(*s, i-1);
+        beforeActual->next = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      }
+      actual = actualNext->next;
+      actualNext = actual->next;
+      } else {
+        actual = actual->next;
+        actualNext = actualNext->next;
       }
     }
+    actual = s->firstRow;
+    actualNext = s->firstRow->next;
     qntRows--;
   }
 }
@@ -529,32 +541,38 @@ void descendingSortByValue(Spreadsheet *s, int col) {
 void sortByAlphabet(Spreadsheet *s, int col) {
   int qntRows = s->rows;
   bool done = false;
-  Row *aux = s->firstRow;
-
+  Row *actualNext = s->firstRow->next;
+  Row *actual = s->firstRow;
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if (strcmp(getCell(*s, i, col), getCell(*s, i+1, col)) > 0) {
-        if (i != 0) {
-          Row *aux2 = getRow(*s, i+1)->next;
-          Row *aux3 = getRow(*s, i);
-          Row *aux4 = getRow(*s, i-1);
-          aux4->next = getRow(*s, i+1);
-          aux3->next = aux2;
-          getRow(*s, i)->next = aux3;
-          done = false;
-        } else {
-          Row *aux2 = aux;
-          s->firstRow = getRow(*s, i+1);
-          aux2->next = s->firstRow->next;
-          s->firstRow->next = aux2;
-          done = false;
-        }
+      if ((strcmp(getCell(*s, i, col), getCell(*s, i+1, col)) > 0)) { 
+      if (actual == s->firstRow) {
+        Row *aux = actualNext->next;
+        s->firstRow = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      } else {
+        Row *aux = actualNext->next;
+        Row *beforeActual = getRow(*s, i-1);
+        beforeActual->next = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      }
+      actual = actualNext->next;
+      actualNext = actual->next;
+      } else {
+        actual = actual->next;
+        actualNext = actualNext->next;
       }
     }
+    actual = s->firstRow;
+    actualNext = s->firstRow->next;
     qntRows--;
   }
-}
+} 
 
 // Exports a spreadsheet in csv (comma separated values) format to a file
 void exportAsCsv(Spreadsheet s, char *file_name){
