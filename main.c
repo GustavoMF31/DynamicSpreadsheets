@@ -746,17 +746,21 @@ void configurations(bool *colored){
 
   if (!*colored){
     configMenu = titleMenu("Deseja ativar a interface colorida?", L"Deseja ativar a interface colorida?", confirmation, wconfirmation, 2);
-    if (configMenu == 1) setColor();
-    *colored = true;
-
-    printf("\n%sEsquema de cores ativado!\n", palette[GREEN]);
+    if (configMenu == 1){ 
+      setColor();
+      *colored = true;
+      printf("\n%sEsquema de cores ativado!\n", palette[GREEN]);
+    }
+    else return;
   }
   else {
     configMenu = titleMenu("Deseja desativar a interface colorida?", L"Deseja desativar a interface colorida?", confirmation, wconfirmation, 2);
-    if (configMenu == 1) clearColor();
-    *colored = false;
-
-    printf("\n%sEsquema de cores desativado!\n", palette[GREEN]);
+    if (configMenu == 1){ 
+      clearColor();
+      *colored = false;
+      printf("\n%sEsquema de cores desativado!\n", palette[GREEN]);
+    }
+    else return;
   }
 
   menu(backMenu, wbackMenu, 1);
