@@ -27,9 +27,9 @@ void wait(float sec){
 void loading(char msg[], float duration){
   printf("%s", msg);
   for (int i = 0; i < 3; i++){
+    fflush(stdout);
     wait(duration/3);
     printf(".");
-    fflush(stdout);
   }
 }
 

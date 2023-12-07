@@ -39,6 +39,5 @@ typedef struct {
   Term rightTerm;
 } Filter;
 
-bool compare(Literal a, Literal b, Comparison op);
 bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond);
 void filterSpreadsheet(Spreadsheet *s, Filter cond);

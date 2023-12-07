@@ -311,7 +311,7 @@ void updateCellValue(Spreadsheet s, int row, int col) {
           *((double *) getCell(s, row, col)) = double_entry;
         }
         else {
-          printf("\nnsira um valor racional válido.\n");
+          printf("\nInsira um valor racional válido.\n");
           error = true;
         }
         break;
@@ -466,29 +466,31 @@ void removeColumn(Spreadsheet *s, int col) {
 //Sort the rows of a Spreedsheet by the value of cells of a specific col in ascending order
 void ascendingSortByValue(Spreadsheet *s, int col) {
   int qntRows = s->rows;
-  bool done = false;
+  bool done = false, comp;
   Row *actualNext = s->firstRow->next;
   Row *actual = s->firstRow;
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if (*(actualNext->entries+columnOffset(*s, col)) < *(actual->entries+columnOffset(*s, col))) { 
-      if (actual == s->firstRow) {
-        Row *aux = actualNext->next;
-        s->firstRow = actualNext;
-        actualNext->next = actual;
-        actual->next = aux;
-        done = false;
-      } else {
-        Row *aux = actualNext->next;
-        Row *beforeActual = getRow(*s, i-1);
-        beforeActual->next = actualNext;
-        actualNext->next = actual;
-        actual->next = aux;
-        done = false;
-      }
-      actual = actualNext->next;
-      actualNext = actual->next;
+      if (s->column_types[col] == INT) comp = (*(int*)(actualNext->entries+columnOffset(*s, col)) < *(int*)(actual->entries+columnOffset(*s, col)));
+      else comp = (*(double*)(actualNext->entries+columnOffset(*s, col)) < *(double*)(actual->entries+columnOffset(*s, col)));
+      if (comp) { 
+        if (actual == s->firstRow) {
+          Row *aux = actualNext->next;
+          s->firstRow = actualNext;
+          actualNext->next = actual;
+          actual->next = aux;
+          done = false;
+        } else {
+          Row *aux = actualNext->next;
+          Row *beforeActual = getRow(*s, i-1);
+          beforeActual->next = actualNext;
+          actualNext->next = actual;
+          actual->next = aux;
+          done = false;
+        }
+        actual = actualNext->next;
+        actualNext = actual->next;
       } else {
         actual = actual->next;
         actualNext = actualNext->next;
@@ -503,29 +505,31 @@ void ascendingSortByValue(Spreadsheet *s, int col) {
 //Sort the rows of a Spreedsheet by the value of cells of a specific col in descending order
 void descendingSortByValue(Spreadsheet *s, int col) {
   int qntRows = s->rows;
-  bool done = false;
+  bool done = false, comp;
   Row *actualNext = s->firstRow->next;
   Row *actual = s->firstRow;
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if (*(actualNext->entries+columnOffset(*s, col)) > *(actual->entries+columnOffset(*s, col))) { 
-      if (actual == s->firstRow) {
-        Row *aux = actualNext->next;
-        s->firstRow = actualNext;
-        actualNext->next = actual;
-        actual->next = aux;
-        done = false;
-      } else {
-        Row *aux = actualNext->next;
-        Row *beforeActual = getRow(*s, i-1);
-        beforeActual->next = actualNext;
-        actualNext->next = actual;
-        actual->next = aux;
-        done = false;
-      }
-      actual = actualNext->next;
-      actualNext = actual->next;
+      if (s->column_types[col] == INT) comp = (*(int*)(actualNext->entries+columnOffset(*s, col)) > *(int*)(actual->entries+columnOffset(*s, col)));
+      else comp = (*(double*)(actualNext->entries+columnOffset(*s, col)) > *(double*)(actual->entries+columnOffset(*s, col)));
+      if (comp) { 
+        if (actual == s->firstRow) {
+          Row *aux = actualNext->next;
+          s->firstRow = actualNext;
+          actualNext->next = actual;
+          actual->next = aux;
+          done = false;
+        } else {
+          Row *aux = actualNext->next;
+          Row *beforeActual = getRow(*s, i-1);
+          beforeActual->next = actualNext;
+          actualNext->next = actual;
+          actual->next = aux;
+          done = false;
+        }
+        actual = actualNext->next;
+        actualNext = actual->next;
       } else {
         actual = actual->next;
         actualNext = actualNext->next;
@@ -765,37 +769,39 @@ void displaySpreadsheet(Spreadsheet s){
 
 
 /*
+//Sort the rows of a Spreedsheet by the value of cells of a specific col in ascending order
 void ascendingSortByValue(Spreadsheet *s, int col) {
   int qntRows = s->rows;
   bool done = false;
-  Row *aux = s->firstRow;
-  bool comp;
-
-  if (s->column_types[col] == STRING || s->column_types[col] == BOOL) return;
-
+  Row *actualNext = s->firstRow->next;
+  Row *actual = s->firstRow;
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if (s->column_types[col] == INT) comp = *(int*)getCell(*s, i+1, col) < *(int*)getCell(*s, i, col);
-      else comp = *(double*)getCell(*s, i+1, col) < *(double*)getCell(*s, i, col);
-      if (comp) {
-        if (i != 0) {
-          Row *aux2 = getRow(*s, i+1)->next;
-          Row *aux3 = getRow(*s, i);
-          Row *aux4 = getRow(*s, i-1);
-          aux4->next = getRow(*s, i+1);
-          aux3->next = aux2;
-          getRow(*s, i)->next = aux3;
-          done = false;
-        } else {
-          Row *aux2 = aux;
-          s->firstRow = getRow(*s, 1);
-          aux2->next = s->firstRow->next;
-          s->firstRow->next = aux2;
-          done = false;
-        }
+      if (*(actualNext->entries+columnOffset(*s, col)) < *(actual->entries+columnOffset(*s, col))) { 
+      if (actual == s->firstRow) {
+        Row *aux = actualNext->next;
+        s->firstRow = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      } else {
+        Row *aux = actualNext->next;
+        Row *beforeActual = getRow(*s, i-1);
+        beforeActual->next = actualNext;
+        actualNext->next = actual;
+        actual->next = aux;
+        done = false;
+      }
+      actual = actualNext->next;
+      actualNext = actual->next;
+      } else {
+        actual = actual->next;
+        actualNext = actualNext->next;
       }
     }
+    actual = s->firstRow;
+    actualNext = s->firstRow->next;
     qntRows--;
   }
 }

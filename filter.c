@@ -86,13 +86,14 @@ bool checkCondition(Spreadsheet s, char *entries, Filter cond){
 }
 
 // Transforms a textual expression to a valid Filter variable and its attributes
-// OBS.: The function assumes that the left term is NOT a literal
 bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
   char leftTerm[81], operator[81], rightTerm[81];
   bool leftTermFound = false, rightTermFound = false;
   Type leftTermType, rightTermType;
 
-  sscanf(buffer, "%s %s %s", leftTerm, operator, rightTerm);
+  // Improved input that accepts field names with spaces
+  sscanf(buffer, "%[^><=] %[><=] %[^\n]", leftTerm, operator, rightTerm);
+  leftTerm[strlen(leftTerm)-1] = '\0';
                       
   // Iterating on the column names to find out if the left term and/or the right term exist
   for (int i = 0; i < s.columns; i++){
