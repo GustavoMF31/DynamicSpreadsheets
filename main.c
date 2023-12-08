@@ -569,7 +569,7 @@ void sortSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *myColumnNam
     printf("\n%sA planilha foi ordenada, a partir do campo %s'%s'%s, em ordem alfabética.\n", palette[CYAN], palette[YELLOW], myColumnName, palette[CYAN]);
   }
 
-  printf("\n%sPlanilha: %s%s\n\n", palette[PURPLE], palette[YELLOW], name);
+  printf("\n%sPlanilha: %s%s\n\n", palette[CYAN], palette[YELLOW], name);
 
   displaySpreadsheet(*mainSpreadsheet);
 
