@@ -113,7 +113,7 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
     printf("\n%sDeve haver pelo menos um campo no filtro.\n\n", palette[RED]);
     return false;
   }
-  else if (leftTermFound && rightTermFound && leftTermType != rightTermType){
+  else if (leftTermFound && rightTermFound && (leftTermType != rightTermType)){
     printf("\n%sOs tipos dos campos inseridos são incompatíveis!\n\n", palette[RED]);
     return false;
   }
@@ -203,7 +203,7 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
     return false;
   }
 
-  if (cond->op != EQ && (leftTermType == BOOL || rightTermType == BOOL)){
+  if (cond->op != EQ && leftTermFound && rightTermFound && (leftTermType == BOOL || rightTermType == BOOL)){
     printf("\n%sSomente são aceitas comparações de igualdade para o tipo booleano.\n\n", palette[RED]);
     return false;
   }
