@@ -203,7 +203,7 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
     return false;
   }
 
-  if ((cond->op != EQ) && ((leftTermFound && leftTermType == BOOL) || (rightTermFound && rightTermType == BOOL))){
+  if ((cond->op != EQ) && ((leftTermFound && (leftTermType == BOOL)) || (rightTermFound && (rightTermType == BOOL)))){
     printf("\n%sSomente são aceitas comparações de igualdade para o tipo booleano.\n\n", palette[RED]);
     return false;
   }
