@@ -95,7 +95,7 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
   // Improved input that accepts field names with spaces
   sscanf(buffer, "%[^><=] %[><=] %[^\n]", leftTerm, operator, rightTerm);
   leftTerm[strlen(leftTerm)-1] = '\0';
-                      
+
   // Iterating on the column names to find out if the left term and/or the right term exist
   for (int i = 0; i < s.columns; i++){
     if (strcmp(leftTerm, s.column_names[i]) == 0){
@@ -107,7 +107,7 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
       rightTermType = s.column_types[i];
     }
   }
-  
+
   // Taking care of the disparities between the types of the left and right terms
   if (!leftTermFound && !rightTermFound){
     printf("\n%sDeve haver pelo menos um campo no filtro.\n\n", palette[RED]);
@@ -127,12 +127,12 @@ bool inputToFilter(Spreadsheet s, char *buffer, Filter *cond){
     printf("\n%sO valor do literal deveria ser um racional!\n\n", palette[RED]);
     return false;
   }
-  else if ((!rightTermFound && (leftTermType == BOOL) && (strcmp(rightTerm, "verdadeiro") != 0) && (strcmp(rightTerm, "falso") != 0)) || 
+  else if ((!rightTermFound && (leftTermType == BOOL) && (strcmp(rightTerm, "verdadeiro") != 0) && (strcmp(rightTerm, "falso") != 0)) ||
           (!leftTermFound && (rightTermType == BOOL) && (strcmp(leftTerm, "verdadeiro") != 0) && (strcmp(leftTerm, "falso") != 0))){
     printf("\n%sO valor do literal deveria ser um booleano!\n\n", palette[RED]);
     return false;
   }
-  else if ((!rightTermFound && (leftTermType == STRING) && (rightTerm[0] != '"') && (rightTerm[strlen(rightTerm)-1] != '"')) || 
+  else if ((!rightTermFound && (leftTermType == STRING) && (rightTerm[0] != '"') && (rightTerm[strlen(rightTerm)-1] != '"')) ||
           (!leftTermFound && (rightTermType == STRING) && (leftTerm[0] != '"') && (leftTerm[strlen(leftTerm)-1] != '"'))){
     printf("\n%sO valor do literal deveria ser uma string delimitada por aspas duplas!\n\n", palette[RED]);
     return false;

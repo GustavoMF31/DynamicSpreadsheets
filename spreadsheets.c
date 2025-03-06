@@ -376,7 +376,7 @@ void removeColumn(Spreadsheet *s, int col) {
 
   for (int i = col; i < s->columns-1; i++) { //copy values between col+1 and s->columns to the new memory region
     *(auxTypeNew+i) = s->column_types[i+1];
-    strncpy(*(auxNamesNew+i), s->column_names[i+1], 81); 
+    strncpy(*(auxNamesNew+i), s->column_names[i+1], 81);
   }
 
   // MOVE CELLS TO THE LEFT AFTER COL
@@ -395,7 +395,7 @@ void removeColumn(Spreadsheet *s, int col) {
     *(newMemoryRegion+i) = malloc(newOffSet);
   }
   Row *aux = s->firstRow;
-  
+
   int row = 0;
   int moveBytes = 0;
 
@@ -441,8 +441,8 @@ void removeColumn(Spreadsheet *s, int col) {
       }
 
       moveBytes += sizeOfType(auxTypeNew[c]);
-    } 
-    
+    }
+
     deleteEntries = aux->entries;
     aux->entries = (char*)*(newMemoryRegion + row);
     free(deleteEntries);
@@ -475,7 +475,7 @@ void ascendingSortByValue(Spreadsheet *s, int col) {
     for (int i = 0; i < qntRows-1; i++) {
       if (s->column_types[col] == INT) comp = (*(int*)(actualNext->entries+columnOffset(*s, col)) < *(int*)(actual->entries+columnOffset(*s, col)));
       else comp = (*(double*)(actualNext->entries+columnOffset(*s, col)) < *(double*)(actual->entries+columnOffset(*s, col)));
-      if (comp) { 
+      if (comp) {
         if (actual == s->firstRow) {
           Row *aux = actualNext->next;
           s->firstRow = actualNext;
@@ -514,7 +514,7 @@ void descendingSortByValue(Spreadsheet *s, int col) {
     for (int i = 0; i < qntRows-1; i++) {
       if (s->column_types[col] == INT) comp = (*(int*)(actualNext->entries+columnOffset(*s, col)) > *(int*)(actual->entries+columnOffset(*s, col)));
       else comp = (*(double*)(actualNext->entries+columnOffset(*s, col)) > *(double*)(actual->entries+columnOffset(*s, col)));
-      if (comp) { 
+      if (comp) {
         if (actual == s->firstRow) {
           Row *aux = actualNext->next;
           s->firstRow = actualNext;
@@ -551,7 +551,7 @@ void sortByAlphabet(Spreadsheet *s, int col) {
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if ((strcmp(getCell(*s, i, col), getCell(*s, i+1, col)) > 0)) { 
+      if ((strcmp(getCell(*s, i, col), getCell(*s, i+1, col)) > 0)) {
       if (actual == s->firstRow) {
         Row *aux = actualNext->next;
         s->firstRow = actualNext;
@@ -577,7 +577,7 @@ void sortByAlphabet(Spreadsheet *s, int col) {
     actualNext = s->firstRow->next;
     qntRows--;
   }
-} 
+}
 
 // Exports a spreadsheet in csv (comma separated values) format to a file
 void exportAsCsv(Spreadsheet s, char *file_name){
@@ -653,10 +653,10 @@ void displaySpreadsheet(Spreadsheet s){
   int* columnWidths = (int*)malloc(s.columns * sizeof(int));
   char buffer[81];
   int currentSize;
-    
+
   // Calculate the maximum width for each column
   for (int col = 0; col < s.columns; col++) {
-    columnWidths[col] = strlen(s.column_names[col]);   
+    columnWidths[col] = strlen(s.column_names[col]);
     if (s.column_types[col] == BOOL && columnWidths[col] > 10) continue;
 
     Row* currentRow = s.firstRow;
@@ -695,7 +695,7 @@ void displaySpreadsheet(Spreadsheet s){
         default:
           badType(s.column_types[col], "displaySpreadsheet");
       }
-            
+
       if (s.column_types[col] == BOOL && (*(bool*) cell)) break;
       currentRow = currentRow->next;
     }
@@ -733,7 +733,7 @@ void displaySpreadsheet(Spreadsheet s){
       // prints the information of the cell depending on its type
       printCell(cellType, cell, stdout);
       int cellSize;
-      
+
       switch (cellType){
         case STRING:
           cellSize = strlen(cell)+2;
@@ -752,7 +752,7 @@ void displaySpreadsheet(Spreadsheet s){
         default:
           badType(cellType, "displaySpreadsheet");
       }
-      
+
       fill(' ', columnWidths[col]-cellSize);
     }
     printf("%s%s|\n", palette[CLEAR], palette[CYAN]);  // \n to the next row
@@ -779,7 +779,7 @@ void ascendingSortByValue(Spreadsheet *s, int col) {
   while(!done) {
     done = true;
     for (int i = 0; i < qntRows-1; i++) {
-      if (*(actualNext->entries+columnOffset(*s, col)) < *(actual->entries+columnOffset(*s, col))) { 
+      if (*(actualNext->entries+columnOffset(*s, col)) < *(actual->entries+columnOffset(*s, col))) {
       if (actual == s->firstRow) {
         Row *aux = actualNext->next;
         s->firstRow = actualNext;

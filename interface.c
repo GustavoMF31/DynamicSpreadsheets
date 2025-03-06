@@ -98,7 +98,7 @@ int menu(const char options[][81], const wchar_t woptions[][81], int quant){
     printf("\n%s>> %s", palette[CYAN], palette[GREEN]);
     scanf("%81[^\n]", selection);
     getchar();
-    
+
     if ((atoi(selection) > 0 || strcmp(selection, "0") == 0) && atoi(selection) <= quant){
       clearTerminal();
       return atoi(selection);
@@ -119,7 +119,7 @@ int titleMenu(const char msg[], const wchar_t wmsg[], const char options[][81], 
   for (int i = 0; i < quant; i++){
     if (wcslen(woptions[i]) > maxlen) maxlen = wcslen(woptions[i]);
   }
-  
+
   if(maxlen > titlelen){
     space = (maxlen+5+aux-titlelen)/2;
   }

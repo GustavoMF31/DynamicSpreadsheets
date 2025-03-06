@@ -87,7 +87,7 @@ int main(){
 
         // If an existent spreadsheet is opened, the values of 'fileName' and 'mainSpreadsheet' are updated.
         // If not, they stay the same as in the previous screen
-        
+
         const char loadMenu[][81] = {
           "Editar Planilha",
           "Exibir Planilha",
@@ -266,7 +266,7 @@ void openExistentSpreadsheet(Spreadsheet *mainSpreadsheet, char *name, char *fil
 // "Adicionar Campo"
 void addField(Spreadsheet *mainSpreadsheet, char *myColumnName, Type *myColumnType, char *name){
   printf("\n%sAdicione um novo campo, correspondente a uma coluna, em sua planilha.\n", palette[CYAN]);
-                    
+
   // Receiving the column name
   while (true){
     bool alreadyExists = false;
@@ -307,22 +307,22 @@ void addField(Spreadsheet *mainSpreadsheet, char *myColumnName, Type *myColumnTy
   switch (typeSelection){
     case 1: // "Inteiro"
       *myColumnType = INT;
-      printf("\n%sO campo %s'%s'%s, de tipo %s'inteiro'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+      printf("\n%sO campo %s'%s'%s, de tipo %s'inteiro'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName,
             palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
     case 2: // "Racional"
       *myColumnType = DOUBLE;
-      printf("\n%sO campo %s'%s'%s, de tipo %s'racional'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+      printf("\n%sO campo %s'%s'%s, de tipo %s'racional'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName,
             palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
     case 3: // "Booleano"
       *myColumnType = BOOL;
-      printf("\n%sO campo %s'%s'%s, de tipo %s'booleano'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+      printf("\n%sO campo %s'%s'%s, de tipo %s'booleano'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName,
             palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
     case 4: // "String"
       *myColumnType = STRING;
-      printf("\n%sO campo %s'%s'%s, de tipo %s'string'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName, 
+      printf("\n%sO campo %s'%s'%s, de tipo %s'string'%s, foi anexado à planilha %s'%s'%s com sucesso!\n", palette[GREEN], palette[YELLOW], myColumnName,
             palette[GREEN], palette[YELLOW], palette[GREEN], palette[YELLOW], name, palette[GREEN]);
       break;
   }
@@ -390,12 +390,12 @@ void addLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
       strcpy(buffer, "");
       scanf("%81[^\n]", buffer);
       getchar();
-      
+
       if (atoi(buffer) <= 0 && strcmp(buffer, "0") != 0){
         printf("\n%sDigite um número válido para a posição.\n", palette[RED]);
         continue;
       }
-      
+
       *rowPosition = atoi(buffer);
 
       if (*rowPosition >= 0 && *rowPosition <= mainSpreadsheet->rows) break;
@@ -406,7 +406,7 @@ void addLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
   else *rowPosition = 0;
 
   printf("\n%sA linha foi criada com sucesso!\n", palette[GREEN]);
-  
+
   // If it is not empty in columns, instruct the user about the insertion of data in the existing columns on the new row
   if (mainSpreadsheet->columns > 0){
     printf("\n%sInsira os valores a serem adicionados à nova linha.\n", palette[CYAN]);
@@ -438,12 +438,12 @@ void deleteLine(Spreadsheet *mainSpreadsheet, char *buffer, int *rowPosition){
       strcpy(buffer, "");
       scanf("%81[^\n]", buffer);
       getchar();
-      
+
       if (atoi(buffer) <= 0 && strcmp(buffer, "0") != 0){
         printf("\n%sDigite um número válido para a posição.\n", palette[RED]);
         continue;
       }
-      
+
       *rowPosition = atoi(buffer);
 
       if (*rowPosition >= 0 && *rowPosition <= mainSpreadsheet->rows-1) break;
@@ -477,7 +477,7 @@ void editCell(Spreadsheet *mainSpreadsheet, char *buffer, int *columnPosition, i
     strcpy(buffer, "");
     scanf("%81[^\n]", buffer);
     getchar();
-    
+
     sscanf(buffer, "%d %d", rowPosition, columnPosition);
 
     if (*rowPosition >= 0 && *rowPosition <= mainSpreadsheet->rows-1 && *columnPosition >= 0 && *columnPosition <= mainSpreadsheet->columns-1) break;
@@ -746,7 +746,7 @@ void configurations(bool *colored){
 
   if (!*colored){
     configMenu = titleMenu("Deseja ativar a interface colorida?", L"Deseja ativar a interface colorida?", confirmation, wconfirmation, 2);
-    if (configMenu == 1){ 
+    if (configMenu == 1){
       setColor();
       *colored = true;
       printf("\n%sEsquema de cores ativado!\n", palette[GREEN]);
@@ -755,7 +755,7 @@ void configurations(bool *colored){
   }
   else {
     configMenu = titleMenu("Deseja desativar a interface colorida?", L"Deseja desativar a interface colorida?", confirmation, wconfirmation, 2);
-    if (configMenu == 1){ 
+    if (configMenu == 1){
       clearColor();
       *colored = false;
       printf("\n%sEsquema de cores desativado!\n", palette[GREEN]);
